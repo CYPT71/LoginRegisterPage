@@ -154,8 +154,11 @@ func main() {
 		}
 		userSession := checkAuthn(c)
 
+		userIn.Username = userSession.displayName
+		userIn = userIn.Get()
+
 		user.Username = userSession.displayName
-		user.Credentials = userIn.Get().Credentials
+		user.Credentials = userIn.Credentials
 		user.Update()
 
 		return c.Status(200).JSON(user)
