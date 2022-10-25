@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"encoding/base64"
 	"log"
 	"time"
 
@@ -24,7 +25,7 @@ func RegistrationStart(c *fiber.Ctx) error {
 
 	user.Username = c.Params("username")
 
-	if user.Find(db) {
+	if user.Find() {
 		log.Printf("Find user")
 		return c.Status(401).JSON(fiber.Map{
 			"message": "Find user",
@@ -32,7 +33,7 @@ func RegistrationStart(c *fiber.Ctx) error {
 	}
 
 	user.Roles = 1 << 0
-	user.Create(db)
+	user.Create()
 
 	options, sessionData, err := web.BeginRegistration(*user)
 
@@ -66,7 +67,7 @@ func RegisterEnd(c *fiber.Ctx) error {
 		})
 	}
 
-	if !user.Find(db) {
+	if !user.Find() {
 		return c.Status(403).JSON(fiber.Map{
 			"message": "not found",
 		})
@@ -89,13 +90,13 @@ func RegisterEnd(c *fiber.Ctx) error {
 
 	user.credentals = append(user.credentals, *creds)
 
-	user.saveCredentials(db)
+	user.saveCredentials()
 
 	session.sessionCred = creds
 	session.expiration = 24 * 3600 * 2
 	go session.deleteAfter()
 
 	return c.JSON(fiber.Map{
-		"creds": creds,
+		"token": base64.URLEncoding.EncodeToString(creds.ID) + "?" + base64.URLEncoding.EncodeToString(creds.Authenticator.AAGUID),
 	})
 }

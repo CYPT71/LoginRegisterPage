@@ -61,7 +61,7 @@ const register = async () => {
   }})
   console.log(cred);
 
-  sessionStorage.setItem("cred", JSON.stringify(cred.data.creds))
+  sessionStorage.setItem("cred", cred.data.token)
 
 
 }
@@ -82,7 +82,6 @@ const login = async () => {
     publicKey: data.publicKey,            
   })
 
-  console.log(assertion)
   let authData = assertion.response.authenticatorData;
   let clientDataJSON = assertion.response.clientDataJSON;
   let rawId = assertion.rawId;
@@ -100,6 +99,8 @@ const login = async () => {
       userHandle: bufferEncode(userHandle),
     },
   })
+
+  sessionStorage.setItem("token", cred.data.token)
 
   
 }

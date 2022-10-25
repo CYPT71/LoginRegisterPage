@@ -9,7 +9,6 @@ import (
 
 	"github.com/duo-labs/webauthn/protocol"
 	"github.com/duo-labs/webauthn/webauthn"
-	"gorm.io/gorm"
 )
 
 type UserModel struct {
@@ -19,15 +18,15 @@ type UserModel struct {
 	Password      string `gorm:"type:varchar(255);"`
 	Roles         uint64 `gorm:"type:numeric;not null"`
 	Credentials   string `gorm:"type:text`
-	webauthn.User `gorm:"-"`
-	credentals    []webauthn.Credential `gorm:"-"`
+	webauthn.User `gorm:"-" json:"-"`
+	credentals    []webauthn.Credential `gorm:"-" json:"-"`
 }
 
 func (user *UserModel) TableName() string {
 	return "users"
 }
 
-func (user *UserModel) saveCredentials(db *gorm.DB) {
+func (user *UserModel) saveCredentials() {
 	// @todo asure that credentials are transform to string
 	var publicKeys []string
 	for _, v := range user.credentals {
@@ -51,17 +50,29 @@ func (user *UserModel) parseCredentials() {
 	}
 }
 
-func (user *UserModel) Create(db *gorm.DB) {
+func (user *UserModel) Create() {
 	db.Create(user)
 }
 
-func (user *UserModel) Find(db *gorm.DB) bool {
+func (user *UserModel) Find() bool {
 	tx := db.Where("username = ?", user.Username).Find(user)
 	return tx.RowsAffected != 0
 }
+func (user *UserModel) Get() *UserModel {
 
-func (user *UserModel) Delete(db *gorm.DB) {
+	tx := db.Where("username = ?", user.Username).Find(user)
+	if tx.RowsAffected == 0 {
+		return nil
+	}
+	return user
+
+}
+func (user *UserModel) Delete() {
 	db.Delete(user)
+}
+
+func (user *UserModel) Update() {
+	db.Save(&user)
 }
 
 func randomUint64() uint64 {

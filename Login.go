@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"encoding/base64"
 	"log"
 
 	"github.com/duo-labs/webauthn/protocol"
@@ -12,7 +13,7 @@ func LoginStart(c *fiber.Ctx) error {
 
 	user := new(UserModel)
 	user.Username = c.Params("username")
-	if user.Find(db) == false {
+	if user.Find() == false {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 			"message": "no user with this username",
 		})
@@ -28,7 +29,7 @@ func LoginStart(c *fiber.Ctx) error {
 
 	session.sessionData = sessionData
 	session.displayName = user.Username
-	session.expiration = 60 * 60 * 3600
+	session.expiration = 60 * 3
 	go session.deleteAfter()
 	sessions[user.Username] = session
 
@@ -39,7 +40,7 @@ func LoginStart(c *fiber.Ctx) error {
 func LoginEnd(c *fiber.Ctx) error {
 	user := new(UserModel)
 	user.Username = c.Params("username")
-	if user.Find(db) == false {
+	if user.Find() == false {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 			"message": "no user with this username",
 		})
@@ -70,9 +71,14 @@ func LoginEnd(c *fiber.Ctx) error {
 		})
 	}
 	session.sessionCred = creds
+	session.expiration = 24 * 3600 * 2
+	go session.deleteAfter()
+
 	sessions[user.Username] = session
 	user.credentals = append(user.credentals, *creds)
-	user.saveCredentials(db)
-	return c.JSON(creds)
+	user.saveCredentials()
 
+	return c.JSON(fiber.Map{
+		"token": base64.URLEncoding.EncodeToString(creds.ID) + "?" + base64.URLEncoding.EncodeToString(creds.Authenticator.AAGUID),
+	})
 }

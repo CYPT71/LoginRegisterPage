@@ -23,6 +23,17 @@ type
 
 **POST** __login/end/:username__ finish the login and return User Credentials and update in database
 
+***api*** path prefix for following routes require Authorization Bearer with AAGUID and a AllowedCredentialID separated by question mark
+  - ***user** path prefix for user 
+    **GET** return the user
+    **GET** __logout__ force close api session
+    **Patch** take a JSON body and update a user
+    **DELETE** delete a user
+    **DELETE** __cred__ remove all login Credentials
+
+
+
+
 # Run the project
 
 go version go1.19.2
