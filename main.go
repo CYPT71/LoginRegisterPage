@@ -68,7 +68,10 @@ func checkAuthn(c *fiber.Ctx) *UserSessions {
 
 func main() {
 	/* env vars */
-	godotenv.Load(".env")
+	if _, err := os.Stat(".env"); err == nil {
+		godotenv.Load(".env")
+ }
+
 	postgresHost := os.Getenv("PostgresHost")
 	postgresUser := os.Getenv("PostgresUser")
 	postgresPassword := os.Getenv("PostgresPassword")
@@ -118,7 +121,7 @@ func main() {
 
 	app.Post("login/end/:username", LoginEnd)
 
-	api := app.Group("/api", func(c *fiber.Ctx) error {
+	user := app.Group("user", func(c *fiber.Ctx) error {
 		if checkAuthn(c) == nil {
 			return c.SendStatus(fiber.StatusUnauthorized)
 		}
@@ -126,8 +129,6 @@ func main() {
 		return c.Next()
 
 	})
-
-	user := api.Group("user")
 	user.Get("/", func(c *fiber.Ctx) error {
 		user := new(UserModel)
 		userSession := checkAuthn(c)

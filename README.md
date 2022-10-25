@@ -15,21 +15,20 @@ type
 
 # api request 
 
-**POST** __register/start/:username__ begin registration and send Credentials to user create a new session form user
+**POST** _register/start/:username_ begin registration and send Credentials to user create a new session form user
 
-**POST** __register/end/:username__ finish the registration and return User Credentials and save in database
+**POST** _register/end/:username_ finish the registration and return User Credentials and save in database
 
-**POST** __login/start/:username__ begin the login and send Credentials to user create a new session form the user if not exist
+**POST** _login/start/:username_ begin the login and send Credentials to user create a new session form the user if not exist
 
-**POST** __login/end/:username__ finish the login and return User Credentials and update in database
+**POST** _login/end/:username_ finish the login and return User Credentials and update in database
 
-***api*** path prefix for following routes require Authorization Bearer with AAGUID and a AllowedCredentialID separated by question mark
-  - ***user** path prefix for user 
-    **GET** return the user
-    **GET** __logout__ force close api session
-    **Patch** take a JSON body and update a user
-    **DELETE** delete a user
-    **DELETE** __cred__ remove all login Credentials
+***user** path prefix for user 
+  **GET** return the user
+  **GET** _logout_ force close api session
+  **Patch** take a JSON body and update a user
+  **DELETE** delete a user
+  **DELETE** _cred_ remove all login Credentials
 
 
 
