@@ -17,7 +17,7 @@ type UserModel struct {
 	Email         string `gorm:"type:varchar(255);"`
 	Password      string `gorm:"type:varchar(255);"`
 	Roles         uint64 `gorm:"type:numeric;not null"`
-	Credentials   string `gorm:"type:text`
+	Credentials   string `gorm:"type:text json:"-"`
 	webauthn.User `gorm:"-" json:"-"`
 	credentals    []webauthn.Credential `gorm:"-" json:"-"`
 }

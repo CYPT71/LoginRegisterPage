@@ -70,7 +70,7 @@ func main() {
 	/* env vars */
 	if _, err := os.Stat(".env"); err == nil {
 		godotenv.Load(".env")
- }
+	}
 
 	postgresHost := os.Getenv("PostgresHost")
 	postgresUser := os.Getenv("PostgresUser")
@@ -145,14 +145,17 @@ func main() {
 	})
 
 	user.Patch("/", func(c *fiber.Ctx) error {
+		userIn := new(UserModel)
+
 		user := new(UserModel)
 		if err := c.BodyParser(user); err != nil {
 			fmt.Println("error = ", err)
 			return c.SendStatus(200)
 		}
 		userSession := checkAuthn(c)
-		user.Username = userSession.displayName
 
+		user.Username = userSession.displayName
+		user.Credentials = userIn.Get().Credentials
 		user.Update()
 
 		return c.Status(200).JSON(user)
