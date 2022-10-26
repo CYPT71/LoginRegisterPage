@@ -81,7 +81,7 @@ const register = async () => {
   }})
   console.log(cred);
 
-  sessionStorage.setItem("cred", cred.data.token)
+  sessionStorage.setItem("toekn", cred.data.token)
   singned.value = true
 
 

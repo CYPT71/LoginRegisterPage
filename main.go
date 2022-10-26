@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/gofiber/fiber/v2/middleware/cors"
-	"github.com/joho/godotenv"
+	// "github.com/joho/godotenv"
 
 	"github.com/duo-labs/webauthn/webauthn"
 	"github.com/gofiber/fiber/v2"
@@ -68,9 +68,9 @@ func checkAuthn(c *fiber.Ctx) *UserSessions {
 
 func main() {
 	/* env vars */
-	if _, err := os.Stat(".env"); err == nil {
+	/** if _, err := os.Stat(".env"); err == nil {
 		godotenv.Load(".env")
-	}
+	} **/
 
 	postgresHost := os.Getenv("PostgresHost")
 	postgresUser := os.Getenv("PostgresUser")
