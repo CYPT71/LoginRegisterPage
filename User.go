@@ -17,7 +17,7 @@ type UserModel struct {
 	Email         string `gorm:"type:varchar(255);"`
 	Password      string `gorm:"type:varchar(255);"`
 	Roles         uint64 `gorm:"type:numeric;not null"`
-	Credentials   string `gorm:"type:text json:"-"`
+	Credentials   string `gorm:"type:text" json:"-"`
 	webauthn.User `gorm:"-" json:"-"`
 	credentals    []webauthn.Credential `gorm:"-" json:"-"`
 }
@@ -54,6 +54,9 @@ func (user *UserModel) Create() {
 	db.Create(user)
 }
 
+/*
+if user fin return true else false
+*/
 func (user *UserModel) Find() bool {
 	tx := db.Where("username = ?", user.Username).Find(user)
 	return tx.RowsAffected != 0

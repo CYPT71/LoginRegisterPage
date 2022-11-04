@@ -72,13 +72,53 @@ func LoginEnd(c *fiber.Ctx) error {
 	}
 	session.sessionCred = creds
 	session.expiration = 24 * 3600 * 2
+	session.jwt = base64.URLEncoding.EncodeToString(creds.ID) + "?" + base64.URLEncoding.EncodeToString(creds.Authenticator.AAGUID)
 	go session.deleteAfter()
 
 	sessions[user.Username] = session
 	user.credentals = append(user.credentals, *creds)
+
 	user.saveCredentials()
 
 	return c.JSON(fiber.Map{
-		"token": base64.URLEncoding.EncodeToString(creds.ID) + "?" + base64.URLEncoding.EncodeToString(creds.Authenticator.AAGUID),
+		"token": session.jwt,
+	})
+}
+
+func loginPassword(c *fiber.Ctx) error {
+
+	user := new(UserModel)
+	user.Username = c.Params("username")
+	if user.Find() == false {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"message": "no user with this username",
+		})
+	}
+
+	userBody := new(UserModel)
+
+	if err := c.BodyParser(&userBody); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"err": err.Error(),
+		})
+	}
+
+	if userBody.Password != user.Password {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"err": "Not Authorize",
+		})
+	}
+
+	session := new(UserSessions)
+
+	session.displayName = user.Username
+	session.jwt = base64.URLEncoding.EncodeToString([]byte(user.Password))
+	session.expiration = 24 * 3600 * 2
+	go session.deleteAfter()
+
+	sessions[user.Username] = session
+
+	return c.JSON(fiber.Map{
+		"token": session.jwt,
 	})
 }

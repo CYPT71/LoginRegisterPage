@@ -100,3 +100,41 @@ func RegisterEnd(c *fiber.Ctx) error {
 		"token": base64.URLEncoding.EncodeToString(creds.ID) + "?" + base64.URLEncoding.EncodeToString(creds.Authenticator.AAGUID),
 	})
 }
+
+func RegisterPassword(c *fiber.Ctx) error {
+	user := new(UserModel)
+	user.Username = c.Params("username")
+
+	if user.Find() {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"err": "not authorize",
+		})
+	}
+
+	if err := c.BodyParser(&user); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"err": err.Error(),
+		})
+	}
+
+	if len(user.Password) <= 2 {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"err": "password to short",
+		})
+	}
+
+	session := new(UserSessions)
+
+	session.displayName = user.Username
+	session.jwt = base64.URLEncoding.EncodeToString([]byte(user.Password))
+	session.expiration = 24 * 3600 * 2
+	user.Create()
+
+	sessions[user.Username] = session
+	go session.deleteAfter()
+
+	return c.JSON(fiber.Map{
+		"token": session.jwt,
+	})
+
+}

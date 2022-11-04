@@ -17,11 +17,11 @@ import (
 )
 
 type UserSessions struct {
-	sessionData *webauthn.SessionData
-	sessionCred *webauthn.Credential
+	sessionData *webauthn.SessionData `json:"-"`
+	sessionCred *webauthn.Credential  `json:"-"`
 	displayName string
 	jwt         string
-	expiration  uint64
+	expiration  uint64 `json:"-"`
 }
 
 var (
@@ -117,9 +117,13 @@ func main() {
 
 	app.Post("register/end/:username", RegisterEnd)
 
+	app.Post("register/password/:username", RegisterPassword)
+
 	app.Post("login/start/:username", LoginStart)
 
 	app.Post("login/end/:username", LoginEnd)
+
+	app.Post("login/password/:username", loginPassword)
 
 	user := app.Group("user", func(c *fiber.Ctx) error {
 		if checkAuthn(c) == nil {
@@ -129,6 +133,7 @@ func main() {
 		return c.Next()
 
 	})
+
 	user.Get("/", func(c *fiber.Ctx) error {
 		user := new(UserModel)
 		userSession := checkAuthn(c)
