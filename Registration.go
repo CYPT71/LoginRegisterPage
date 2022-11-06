@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"encoding/base64"
 	"log"
 	"time"
 
@@ -94,10 +93,20 @@ func RegisterEnd(c *fiber.Ctx) error {
 
 	session.sessionCred = creds
 	session.expiration = 24 * 3600 * 2
+
+	token, err := createJWT(session.displayName)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"err": err.Error(),
+		})
+	}
+
+	session.jwt = token
 	go session.deleteAfter()
+	sessions[user.Username] = session
 
 	return c.JSON(fiber.Map{
-		"token": base64.URLEncoding.EncodeToString(creds.ID) + "?" + base64.URLEncoding.EncodeToString(creds.Authenticator.AAGUID),
+		"token": session.jwt,
 	})
 }
 
@@ -126,12 +135,20 @@ func RegisterPassword(c *fiber.Ctx) error {
 	session := new(UserSessions)
 
 	session.displayName = user.Username
-	session.jwt = base64.URLEncoding.EncodeToString([]byte(user.Password))
 	session.expiration = 24 * 3600 * 2
-	user.Create()
 
+	token, err := createJWT(session.displayName)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"err": err.Error(),
+		})
+	}
+
+	session.jwt = token
 	sessions[user.Username] = session
 	go session.deleteAfter()
+
+	user.Create()
 
 	return c.JSON(fiber.Map{
 		"token": session.jwt,
