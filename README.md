@@ -27,7 +27,7 @@ type
 
 **POST** _login/password/:username_ login with password and username
 
-***user** path prefix for user 
+**user** path prefix for user 
   **GET** return the user
   **GET** _logout_ force close api session
   **Patch** take a JSON body and update a user
