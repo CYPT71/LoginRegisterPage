@@ -19,9 +19,13 @@ type
 
 **POST** _register/end/:username_ finish the registration and return User Credentials and save in database
 
+**POST** _register/password/:username_ register with password and username
+
 **POST** _login/start/:username_ begin the login and send Credentials to user create a new session form the user if not exist
 
 **POST** _login/end/:username_ finish the login and return User Credentials and update in database
+
+**POST** _login/password/:username_ login with password and username
 
 ***user** path prefix for user 
   **GET** return the user
