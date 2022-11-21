@@ -71,7 +71,7 @@ func LoginEnd(c *fiber.Ctx) error {
 	}
 	session.sessionCred = creds
 	session.expiration = 24 * 3600 * 2
-	token, err := createJWT(session.displayName)
+	token, err := createJWT(*session)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"err": err.Error(),
@@ -118,7 +118,7 @@ func loginPassword(c *fiber.Ctx) error {
 	session := new(UserSessions)
 
 	session.displayName = user.Username
-	token, err := createJWT(session.displayName)
+	token, err := createJWT(*session)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"err": err.Error(),

@@ -69,6 +69,7 @@ func main() {
 		fmt.Println(err)
 	}
 
+	app.Get("/checkUser/:username", CheckUserName)
 	//app routes
 	app.Post("register/start/:username", RegistrationStart)
 
@@ -83,7 +84,9 @@ func main() {
 	app.Post("login/password/:username", loginPassword)
 
 	UserBootstrap(app.Group("user", func(c *fiber.Ctx) error {
+
 		if checkAuthn(c) == nil {
+			log.Println(c.GetReqHeaders())
 			return c.SendStatus(fiber.StatusUnauthorized)
 		}
 		return c.Next()

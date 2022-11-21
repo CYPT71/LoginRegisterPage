@@ -1,11 +1,30 @@
 package main
 
 import (
-	"fmt"
+	"encoding/json"
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
 )
+
+type PartialUser struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
+func (p *PartialUser) Unmarshal(body []byte) error {
+	return json.Unmarshal(body, &p)
+}
+
+func CheckUserName(c *fiber.Ctx) error {
+	user := new(UserModel)
+	user.Username = c.Params("username")
+
+	return c.Status(200).JSON(fiber.Map{
+		"user": user.Get() != nil,
+	})
+
+}
 
 func UserBootstrap(app fiber.Router) {
 
@@ -25,21 +44,25 @@ func UserBootstrap(app fiber.Router) {
 	})
 
 	app.Patch("/", func(c *fiber.Ctx) error {
-		userIn := new(UserModel)
 
-		user := new(UserModel)
-		if err := c.BodyParser(user); err != nil {
-			fmt.Println("error = ", err)
-			return c.SendStatus(200)
-		}
 		userSession := checkAuthn(c)
 
+		userIn := new(UserModel)
 		userIn.Username = userSession.displayName
 		userIn = userIn.Get()
 
-		user.Username = userSession.displayName
-		user.Credentials = userIn.Credentials
-		// user.Update()
+		user := new(PartialUser)
+		err := user.Unmarshal(c.Body())
+		if err != nil {
+			return c.Status(fiber.ErrInternalServerError.Code).JSON(fiber.Map{
+				"err": err.Error(),
+			})
+		}
+
+		userIn.Email = user.Email
+		userIn.Password = user.Password
+
+		userIn.Update()
 
 		return c.Status(200).JSON(user)
 

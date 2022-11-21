@@ -24,6 +24,12 @@ func RegistrationStart(c *fiber.Ctx) error {
 
 	user.Username = c.Params("username")
 
+	_, ok := sessions[user.Username]
+
+	if ok == true {
+		delete(sessions, user.Username)
+	}
+
 	if user.Find() {
 		log.Printf("Find user")
 		return c.Status(401).JSON(fiber.Map{
@@ -47,7 +53,8 @@ func RegistrationStart(c *fiber.Ctx) error {
 	session.expiration = 60 * 60 * 3600
 
 	go session.deleteAfter()
-	sessions[options.Response.User.Name] = session
+
+	sessions[session.displayName] = session
 
 	return c.JSON(fiber.Map{
 		"Options": options,
@@ -94,7 +101,7 @@ func RegisterEnd(c *fiber.Ctx) error {
 	session.sessionCred = creds
 	session.expiration = 24 * 3600 * 2
 
-	token, err := createJWT(session.displayName)
+	token, err := createJWT(*session)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"err": err.Error(),
@@ -137,7 +144,7 @@ func RegisterPassword(c *fiber.Ctx) error {
 	session.displayName = user.Username
 	session.expiration = 24 * 3600 * 2
 
-	token, err := createJWT(session.displayName)
+	token, err := createJWT(*session)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"err": err.Error(),

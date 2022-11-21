@@ -3,25 +3,27 @@ package main
 import (
 	"log"
 
+	"math/rand"
+
 	"github.com/golang-jwt/jwt"
 )
 
-type Claims struct {
-	Username string `json:"username"`
-	Ndf      int    `json:"ndf"`
-	jwt.Claims
+var sampleSecretKey = []byte(generateKey(20))
+
+const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
+func generateKey(n int) string {
+	b := make([]byte, n)
+	for i := range b {
+		b[i] = letterBytes[rand.Intn(len(letterBytes))]
+	}
+	return string(b)
 }
 
-var sampleSecretKey = []byte(generateKey())
-
-func generateKey() string {
-	return "AZERTY"
-}
-
-func createJWT(username string) (string, error) {
-	token := jwt.NewWithClaims(jwt.SigningMethodES256, jwt.MapClaims{
-		"username": username,
-		"ndf":      24 * 3600 * 2,
+func createJWT(session UserSessions) (string, error) {
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"username":  session.displayName,
+		"AuthToken": string(session.sessionData.UserID),
 	})
 	tokenString, err := token.SignedString(sampleSecretKey)
 
@@ -33,18 +35,31 @@ func createJWT(username string) (string, error) {
 }
 
 func checkJWT(session *UserSessions, tokenString string) bool {
-
-	token, err := jwt.ParseWithClaims(tokenString, &Claims{},
-		func(token *jwt.Token) (interface{}, error) {
-			return []byte("AllYourBase"), nil
-		})
+	claims := jwt.MapClaims{}
+	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
+		return sampleSecretKey, nil
+	})
 
 	if err != nil {
 		log.Println(err.Error())
 
 		return false
 	}
-	_, ok := token.Claims.(*Claims)
-	return ok && token.Valid
+	if token.Method != jwt.SigningMethodHS256 {
+		log.Println(token.Valid)
+		return false
+	}
+
+	i := 1 << 0
+	for _, val := range claims {
+		if val == session.displayName {
+			i |= 1 << 1
+		}
+		if val == string(session.sessionData.UserID) {
+			i |= 1 << 0
+		}
+	}
+
+	return i == 3
 
 }

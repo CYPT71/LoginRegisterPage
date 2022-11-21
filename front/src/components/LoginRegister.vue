@@ -1,25 +1,23 @@
-<template>
-  <div v-if="singned">
-    <button  @click="logout">Logout</button>
-
-    <HelloWorld :user="currentuser"/>
-  </div>
-  <div v-else>
-    <input v-model="username"/>
-    <button @click="register">Register</button>
-    <button @click="login">Login</button>
-  </div>
+<template  lang="pug">
+.card
+  div(v-if='!singned')
+    input(v-model='username')
+    button(@click='enter') Enter
+  div(v-else)
+    button(@click='logout') Logout
+    Profile(:user="currentUser")
+    
 </template>
 
 <script setup>
 
-import HelloWorld from "./HelloWorld.vue"
+import Profile from "./Profile.vue"
 import axios from "axios"
 import { ref } from 'vue';
 
 const username = ref()
-const currentuser = ref()
 const singned = ref(false)
+const currentUser = ref()
 
 
 
@@ -41,6 +39,16 @@ const logout = async () => {
   sessionStorage.clear()
   singned.value = false
   username.value = ""
+}
+
+const enter = async () => {
+  const {data } = await axios.get(`http://localhost:3000/checkUser/${username.value}`)
+
+  if(data.user) {
+    await login()
+  } else {
+    await register()
+  }
 }
 
 const register = async () => {
@@ -70,7 +78,8 @@ const register = async () => {
   let clientDataJSON = credential.response.clientDataJSON;
   let rawId = credential.rawId;
 
-  
+  await new Promise(r => setTimeout(r, 3600));
+
   const cred= await axios.post(`http://localhost:3000/register/end/${username.value}`, {
     id: credential.id,
     rawId: bufferEncode(rawId),
@@ -81,8 +90,13 @@ const register = async () => {
   }})
   console.log(cred);
 
-  sessionStorage.setItem("toekn", cred.data.token)
+  sessionStorage.setItem("token", cred.data.token)
   singned.value = true
+  const user = axios.get(`http://localhost:3000/user`, {
+    headers : {Authorization: "Bearer "+ sessionStorage.getItem("token")}
+  })
+
+  currentUser.value = user.data
 
 
 }
@@ -124,8 +138,16 @@ const login = async () => {
   sessionStorage.setItem("token", cred.data.token)
   singned.value = true
 
+  await axios.delete(`http://localhost:3000/user/cred`,  {
+    headers : {Authorization: "Bearer "+ sessionStorage.getItem("token")}
+  })
   
-  
+  const user = await axios.get(`http://localhost:3000/user`, {
+    headers : {Authorization: "Bearer "+ sessionStorage.getItem("token")}
+  })
+
+  currentUser.value = user.data
+
 
   
 }
