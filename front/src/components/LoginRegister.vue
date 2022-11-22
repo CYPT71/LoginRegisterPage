@@ -79,7 +79,7 @@ const register = async () => {
   let rawId = credential.rawId;
 
   await new Promise(r => setTimeout(r, 3600));
-
+  
   const cred= await axios.post(`http://localhost:3000/register/end/${username.value}`, {
     id: credential.id,
     rawId: bufferEncode(rawId),
