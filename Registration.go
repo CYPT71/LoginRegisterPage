@@ -80,7 +80,7 @@ func RegisterEnd(c *fiber.Ctx) error {
 	}
 
 	session, ok := sessions[user.Username]
-
+	log.Println(session)
 	if ok == false {
 		return c.Status(fiber.ErrBadRequest.Code).JSON(fiber.Map{
 			"message": "session Not exist",

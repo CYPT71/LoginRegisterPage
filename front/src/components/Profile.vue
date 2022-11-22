@@ -17,14 +17,17 @@
             style="display: flex; justify-content: center; align-items: center"
           >
             <span>
-              <h6>C</h6>
+              <h6>{{exercices[index]['c']}}</h6>
               <input @change="uploadFile($event, 'c', index)" type="file" />
             </span>
             <span>
-              <h6>python</h6>
-              <input @change="uploadFile($event, 'python', index)" type="file" />
+              <h6>{{exercices[index]['py']}}</h6>
+              <input
+                @change="uploadFile($event, 'python', index)"
+                type="file"
+              />
             </span>
-            <h6>Grads : {{ grads }} statement: {{ state }}</h6>
+            <h6></h6>
             <button @click="candyfresh('c')">Refresh</button>
           </div>
         </div>
@@ -35,13 +38,56 @@
 
 <script setup>
 import { ref } from "@vue/reactivity";
+import { watch } from "@vue/runtime-core";
 import axios from "axios";
 
-var user = ref({});
-var email = ref();
-const grads = ref(0);
-const state = ref("not submitted");
-const exercices = ref();
+const user = ref({});
+const email = ref();
+
+axios.get(`http://localhost:3000/user`, {
+    headers : {Authorization: "Bearer "+ sessionStorage.getItem("token")}
+  }).then(({data})=> user.value=data).catch(() =>sessionStorage.clear())
+
+const exercices = ref({
+  fusion: {
+    c: {
+      grades : 0,
+      submited: "not submitted",
+      waiting: "nothing",
+    },
+    py : {
+      grades : 0,
+      submited: "not submitted",
+      waiting: "nothing",
+    }
+  },
+  hanoï: {
+    c: {
+      grades : 0,
+      submited: "not submitted",
+      waiting: "nothing",
+    },
+    py : {
+      grades : 0,
+      submited: "not submitted",
+      waiting: "nothing",
+    }
+  },
+  expo: {
+    c: {
+      grades : 0,
+      submited: "not submitted",
+      waiting: "nothing",
+    },
+    py : {
+      grades : 0,
+      submited: "not submitted",
+      waiting: "nothing",
+    }
+  }
+});
+
+watch(exercices, async () => await candyfresh()) 
 const file = ref(null);
 const statement = ref({
   fusion: `
@@ -134,21 +180,17 @@ const statement = ref({
 
 
 
-const props = defineProps({
-  user: Object,
-});
-
 const uploadFile = (event, lang, index) => {
-  console.log(index, lang);
+  
   submitFile(event.target.files[0])
     .then((result) => {
       axios.post(
-        "http://localhost:8080/exerices/correct",
+        "http://localhost:8000/exercices/correct",
         JSON.stringify({
-          user_id: user.user_id,
+          user_id: 32,
           content: result,
-          exo_id: index,
-          exo_lang: lang
+          exo_id: "hanoï-c",
+          exo_lang: "c",
         }),
         {
           headers: {
@@ -156,7 +198,6 @@ const uploadFile = (event, lang, index) => {
           },
         }
       );
-      console.log();
     })
     .catch((e) => {});
 };
@@ -173,11 +214,20 @@ const submitFile = (file) => {
 const test = async () => {
   const { data } = await axios.get(`http://localhost:8000/exercices`);
   console.log(data.Ok[0]);
-}
+};
 const candyfresh = async () => {
-  const user_id = props.user.Id
-  ///const { data } = await axios.get(`http://localhost:8000/exercices/user/${user.value.user_id}`);
-  //console.log(data);
+  
+  const user_id = user.value.Id;
+  if(user_id  == undefined) return
+  const { data } = await axios.get(`http://localhost:8000/exercices/user/${user_id}`)
+  const stats = data.Ok
+  for (const exo of stats) {
+    let exoLang = exo.name.split("-")
+    exercices.value[exoLang[0]][exoLang[1]]["grades"] = exo.scored
+    exercices.value[exoLang[0]][exoLang[1]]["submited"] = (exo.submitted ? "not ": "")+"submitted"
+    exercices.value[exoLang[0]][exoLang[1]]["waiting"] = (exo.awaiting? "not ": "")+"awaiting"
+  }
+  console.log(exercices.value);
 };
 const update = async () => {
   if (email.value) user.value.Email = email.value;

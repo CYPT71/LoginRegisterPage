@@ -2,10 +2,10 @@
 .card
   div(v-if='!singned')
     input(v-model='username')
-    button(@click='enter') Enter
+    button(@click='enter' id="login") Enter
   div(v-else)
     button(@click='logout') Logout
-    Profile(:user="currentUser")
+    Profile()
     
 </template>
 
@@ -16,9 +16,7 @@ import axios from "axios"
 import { ref } from 'vue';
 
 const username = ref()
-const singned = ref(false)
-const currentUser = ref()
-
+const singned = ref(sessionStorage.getItem("token"))
 
 
 function bufferDecode(value) {
@@ -43,7 +41,7 @@ const logout = async () => {
 
 const enter = async () => {
   const {data } = await axios.get(`http://localhost:3000/checkUser/${username.value}`)
-
+  document.getElementById("login").disable = true
   if(data.user) {
     await login()
   } else {
