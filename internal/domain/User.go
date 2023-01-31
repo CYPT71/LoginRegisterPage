@@ -35,6 +35,7 @@ func (session *UserSessions) DeleteAfter(sessions map[string]*UserSessions) {
 type UserModel struct {
 	Id            uint   `gorm:"primarykey;autoIncrement;not null"`
 	Username      string `gorm:"type:varchar(255);not null"`
+	Icon          []byte `gorm:"type:blob;"`
 	Email         string `gorm:"type:varchar(255);"`
 	Password      string `gorm:"type:varchar(255);"`
 	Permissions   uint64 `gorm:"type:numeric;not null"`

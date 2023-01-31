@@ -7,6 +7,8 @@ import (
 
 	"webauthn_api/internal/domain"
 
+	"github.com/google/uuid"
+
 	"github.com/golang-jwt/jwt"
 )
 
@@ -23,9 +25,17 @@ func generateKey(n int) string {
 }
 
 func CreateJWT(session domain.UserSessions) (string, error) {
+	var authToken string
+	if session.SessionData == nil {
+		authToken = uuid.NewString()
+
+	} else {
+		authToken = string(session.SessionData.UserID)
+	}
+
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"username":  session.DisplayName,
-		"AuthToken": string(session.SessionData.UserID),
+		"AuthToken": authToken,
 	})
 	tokenString, err := token.SignedString(sampleSecretKey)
 

@@ -22,13 +22,13 @@ services:
       PGADMIN_DEFAULT_PASSWORD: admin
     volumes:
       - pgadmin-data:/var/lib/pgadmin
-  userApi:
-    image: test
-    container_name: userApi
-    environment:
-      PostgresHost: local_pgdb
-    ports:
-      - "3000:80"
+  # userApi:
+  #   image: test
+  #   container_name: userApi
+  #   environment:
+  #     PostgresHost: local_pgdb
+  #   ports:
+  #     - "3000:80"
 
 volumes:
   local_pgdata:
