@@ -1,19 +1,21 @@
-# User 
+# User
 
-type 
-  - webauthn user 
-  - roles number corresponding of bytes associte to Roles
-  - Email 
-  - password backup to webauthn
-  - Credentials webauthn credentials  in database and credentials are charge in code 
+type
 
-# Role 
+- webauthn user
+- roles number corresponding of bytes associte to Permissions
+- Email
+- password backup to webauthn
+- Credentials webauthn credentials  in database and credentials are charge in code
 
-type 
-  - name of the role
-  - byte number 
+# Role
 
-# api request 
+type
+
+- name of the role
+- byte number
+
+# api request
 
 **POST** _register/start/:username_ begin registration and send Credentials to user create a new session form user
 
@@ -27,26 +29,26 @@ type
 
 **POST** _login/password/:username_ login with password and username
 
-**user** path prefix for user 
-  - **GET** return the user
-  - **GET** _logout_ force close api session
-  - **Patch** take a JSON body and update a user
-  - **DELETE** delete a user
-  - **DELETE** _cred_ remove all login Credentials
+**user** path prefix for user
 
-
-
+- **GET** return the user
+- **GET** _logout_ force close api session
+- **Patch** take a JSON body and update a user
+- **DELETE** delete a user
+- **DELETE** _cred_ remove all login Credentials
 
 # Run the project
 
 go version go1.19.2
 docker version 1.1.4
 docker compose version v2.12.0
+
 ```sh
 docker compose up -d
 go mod tidy
 go run .
 ```
+
 New terminal or same
 
 ```sh
