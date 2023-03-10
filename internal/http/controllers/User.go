@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"encoding/json"
 	"strings"
 
 	"webauthn_api/internal/domain"
@@ -10,94 +9,123 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-type PartialUser struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
-}
-
-func (p *PartialUser) Unmarshal(body []byte) error {
-	return json.Unmarshal(body, &p)
-}
-
-func CheckUserName(c *fiber.Ctx) error {
-	user := new(domain.UserModel)
-	user.Username = c.Params("username")
-
-	return c.Status(200).JSON(fiber.Map{
-		"user": user.Get() != nil,
-	})
-
-}
-
 func UserBootstrap(app fiber.Router) {
 
-	app.Get("/", func(c *fiber.Ctx) error {
-		user := new(domain.UserModel)
-		userSession := utils.CheckAuthn(c)
-		user.Username = userSession.DisplayName
-		return c.Status(200).JSON(user.Get())
-	})
+	app.Get("/", about)
 
-	app.Get("/logout", func(c *fiber.Ctx) error {
-		userSession := utils.CheckAuthn(c)
-		delete(utils.Sessions, userSession.DisplayName)
-		return c.Status(200).JSON(fiber.Map{
-			"message": "logout",
+	app.Get("/logout", logout)
+
+	app.Patch("/", editUser)
+
+	app.Delete("/", deleteUser)
+
+	app.Delete("/cred", deleteCred)
+
+}
+
+// Get User
+// @Summary Get about me
+// @Description get all information about me
+// @Tags Users
+// @Success 200 {UserModel} domain.UserModel
+// @Failure 404
+// @Router /user [get]
+func about(c *fiber.Ctx) error {
+	user := new(domain.UserModel)
+	userSession := utils.CheckAuthn(c)
+	if userSession == nil {
+		return c.SendStatus(fiber.StatusUnauthorized)
+	}
+	user.Username = userSession.DisplayName
+	return c.Status(200).JSON(user.Get())
+}
+
+// Logout
+// @Summary Just Logout
+// @Tags Users
+// @Success 200 {array} domain.UserModel
+// @Failure 404 nil object
+// @Router /user/logout [get]
+func logout(c *fiber.Ctx) error {
+	userSession := utils.CheckAuthn(c)
+	delete(utils.Sessions, userSession.DisplayName)
+	return c.Status(200).JSON(fiber.Map{
+		"message": "logout",
+	})
+}
+
+
+
+// Edit me
+// @Summary  edit user
+// @Tags Users
+// @Description edit user information
+// @Success 200 {array} domain.UserModel
+// @Failure 404 nil object
+// @Router /user [patch]
+func editUser(c *fiber.Ctx) error {
+
+	userSession := utils.CheckAuthn(c)
+
+	userIn := new(domain.UserModel)
+	userIn.Username = userSession.DisplayName
+	userIn = userIn.Get()
+
+	user := new(utils.PartialUser)
+	err := user.Unmarshal(c.Body())
+	if err != nil {
+		return c.Status(fiber.ErrInternalServerError.Code).JSON(fiber.Map{
+			"err": err.Error(),
 		})
+	}
+
+	userIn.Email = user.Email
+	userIn.Password = user.Password
+
+	userIn.Update()
+
+	return c.Status(200).JSON(user)
+
+}
+
+// Delete me
+// @Summary  delete account
+// @Tags Users
+// @Description delete user account
+// @Success 200 {array} domain.UserModel
+// @Failure 404 nil object
+// @Router /user [delete]
+func deleteUser(c *fiber.Ctx) error {
+	user := new(domain.UserModel)
+	userSession := utils.CheckAuthn(c)
+	user.Username = userSession.DisplayName
+
+	user.Delete()
+	delete(utils.Sessions, user.Username)
+
+	return c.JSON(fiber.Map{
+		"message": "deleted",
 	})
+}
 
-	app.Patch("/", func(c *fiber.Ctx) error {
+// Delete credential
+// @Summary  delete credential
+// @Tags Users
+// @Description delete webauthn credential
+// @Success 200 {array} domain.UserModel
+// @Failure 404 nil object
+// @Router /user/cred [delete]
+func deleteCred(c *fiber.Ctx) error {
+	user := new(domain.UserModel)
+	userSession := utils.CheckAuthn(c)
+	user.Username = userSession.DisplayName
+	user = user.Get()
+	if user == nil {
+		return c.SendStatus(fiber.StatusBadRequest)
+	}
 
-		userSession := utils.CheckAuthn(c)
+	user.Incredentials = strings.Split(user.Incredentials, ";")[0]
+	user.Update()
 
-		userIn := new(domain.UserModel)
-		userIn.Username = userSession.DisplayName
-		userIn = userIn.Get()
-
-		
-		user := new(PartialUser)
-		err := user.Unmarshal(c.Body())
-		if err != nil {
-			return c.Status(fiber.ErrInternalServerError.Code).JSON(fiber.Map{
-				"err": err.Error(),
-			})
-		}
-
-		userIn.Email = user.Email
-		userIn.Password = user.Password
-
-		userIn.Update()
-
-		return c.Status(200).JSON(user)
-
-	})
-
-	app.Delete("/", func(c *fiber.Ctx) error {
-		user := new(domain.UserModel)
-		userSession := utils.CheckAuthn(c)
-		user.Username = userSession.DisplayName
-
-		user.Delete()
-		delete(utils.Sessions, user.Username)
-
-		return c.JSON(fiber.Map{
-			"message": "deleted",
-		})
-	})
-
-	app.Delete("/cred", func(c *fiber.Ctx) error {
-		user := new(domain.UserModel)
-		userSession := utils.CheckAuthn(c)
-		user.Username = userSession.DisplayName
-		user = user.Get()
-		if user == nil {
-			return c.SendStatus(fiber.StatusBadRequest)
-		}
-
-		user.Credentials = strings.Split(user.Credentials, ";")[0]
-		user.Update()
-
-		return c.Status(200).JSON(user)
-	})
-
+	return c.Status(200).JSON(user)
 }

@@ -1,7 +1,6 @@
 package domain
 
 import (
-	"crypto/rand"
 	"encoding/binary"
 	"encoding/json"
 	"log"
@@ -10,10 +9,7 @@ import (
 
 	"github.com/duo-labs/webauthn/protocol"
 	"github.com/duo-labs/webauthn/webauthn"
-	"gorm.io/gorm"
 )
-
-var Db *gorm.DB
 
 type UserSessions struct {
 	SessionData *webauthn.SessionData `json:"-"`
@@ -24,56 +20,76 @@ type UserSessions struct {
 }
 
 func (session *UserSessions) DeleteAfter(sessions map[string]*UserSessions) {
-	for i := session.Expiration; i >= 0; i-- {
-		time.Sleep(1)
+
+	if session.Expiration > 0 {
+		time.Sleep(time.Second)
+		session.Expiration -= 1
+		session.DeleteAfter(sessions)
+		return
 	}
 
 	log.Printf("user delete")
+
+	user := UserModel{}
+
+	user.Username = session.DisplayName
+
+	userModel := user.Get()
+
+	if user.Password == "" && user.Incredentials == "" {
+		userModel.Delete()
+	}
+
 	delete(sessions, session.DisplayName)
 }
 
 type UserModel struct {
-	Id            uint   `gorm:"primarykey;autoIncrement;not null"`
-	Username      string `gorm:"type:varchar(255);not null"`
-	Icon          []byte `gorm:"type:blob;"`
-	Email         string `gorm:"type:varchar(255);"`
-	Password      string `gorm:"type:varchar(255);"`
-	Permissions   uint64 `gorm:"type:numeric;not null"`
-	Credentials   string `gorm:"type:text"`
+	Id            uint      `gorm:"primarykey;autoIncrement;not null"`
+	Icon          string    `gorm:"type:varchar(255);"`
+	Username      string    `gorm:"type:varchar(255);not null"`
+	Email         string    `gorm:"type:varchar(255);"`
+	Password      string    `gorm:"type:varchar(255);"`
+	Permission    uint64    `gorm:"type:bigint"`
+	Incredentials string    `gorm:"column:credentials type:text"`
 	webauthn.User `gorm:"-" json:"-"`
-	Credentals    []webauthn.Credential `gorm:"-"`
+	Credentials   []webauthn.Credential `gorm:"-"`
 }
 
 func (user *UserModel) TableName() string {
 	return "users"
 }
 
-func (user *UserModel) SaveCredentials() {
+func (user *UserModel) SaveCredentials() error {
 	// @todo asure that credentials are transform to string
 	var publicKeys []string
-	for _, v := range user.Credentals {
+	for _, v := range user.Credentials {
 		b, _ := json.Marshal(v)
 
 		publicKeys = append(publicKeys, string(b))
 	}
-	user.Credentials = strings.Join(publicKeys, ";")
-	Db.Save(&user)
+	user.Incredentials = strings.Join(publicKeys, ";")
+	tx := Db.Save(&user)
+
+	return tx.Error
 }
 
 func (user *UserModel) ParseCredentials() {
-	for _, v := range strings.Split(user.Credentials, ";") {
+	for _, v := range strings.Split(user.Incredentials, ";") {
 		cred := new(webauthn.Credential)
 		err := json.Unmarshal([]byte(v), cred)
 		if err != nil {
 			log.Println(err.Error())
 			continue
 		}
-		user.Credentals = append(user.Credentals, *cred)
+		user.Credentials = append(user.Credentials, *cred)
 	}
 }
 
-func (user *UserModel) Create() {
-	Db.Create(user)
+func (user *UserModel) Create() error {
+	user.Permission = 1 << 0
+	tx := Db.Create(user)
+
+	return tx.Error
 }
 
 /*
@@ -100,11 +116,11 @@ func (user *UserModel) Update() {
 	Db.Save(&user)
 }
 
-func randomUint64() uint64 {
+/* func randomUint64() uint64 {
 	buf := make([]byte, 8)
 	rand.Read(buf)
 	return binary.LittleEndian.Uint64(buf)
-}
+} */
 
 // WebAuthnID returns the user's ID
 func (u UserModel) WebAuthnID() []byte {
@@ -130,12 +146,12 @@ func (u UserModel) WebAuthnIcon() string {
 
 // AddCredential associates the credential to the user
 func (u *UserModel) AddCredential(cred webauthn.Credential) {
-	u.Credentals = append(u.Credentals, cred)
+	u.Credentials = append(u.Credentials, cred)
 }
 
 // WebAuthnCredentials returns credentials owned by the user
 func (u UserModel) WebAuthnCredentials() []webauthn.Credential {
-	return u.Credentals
+	return u.Credentials
 }
 
 // CredentialExcludeList returns a CredentialDescriptor array filled
@@ -143,7 +159,7 @@ func (u UserModel) WebAuthnCredentials() []webauthn.Credential {
 func (u UserModel) CredentialExcludeList() []protocol.CredentialDescriptor {
 
 	credentialExcludeList := []protocol.CredentialDescriptor{}
-	for _, cred := range u.Credentals {
+	for _, cred := range u.Credentials {
 		descriptor := protocol.CredentialDescriptor{
 			Type:         protocol.PublicKeyCredentialType,
 			CredentialID: cred.ID,

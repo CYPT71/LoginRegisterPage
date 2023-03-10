@@ -12,14 +12,14 @@ import (
 
 	// "github.com/joho/godotenv"
 
+	_ "webauthn_api/docs"
+
 	"github.com/duo-labs/webauthn/webauthn"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
-var (
-	err error
-)
+var err error
 
 func main() {
 	/* env vars */
@@ -31,7 +31,7 @@ func main() {
 	postgresUser := os.Getenv("PostgresUser")
 	postgresPassword := os.Getenv("PostgresPassword")
 	postgresDatabase := os.Getenv("PostgresDatabase")
-	postgresPort := os.Getenv("postgresPort")
+	postgresPort := os.Getenv("PostgresPort")
 	RPDiplayName := os.Getenv("RPDisplayName")
 	RPID := os.Getenv("RPID")
 	ROrigin := os.Getenv("RPOrigin")

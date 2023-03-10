@@ -25,6 +25,8 @@ func CheckAuthn(c *fiber.Ctx) *domain.UserSessions {
 
 	auth := authType[1]
 
+	// log.Println(authType)
+
 	for _, v := range Sessions {
 
 		if CheckJWT(v, auth) {

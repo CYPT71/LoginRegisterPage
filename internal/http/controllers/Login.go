@@ -11,11 +11,26 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func LoginStart(c *fiber.Ctx) error {
+func LoginBoostrap(app fiber.Router) {
+	app.Post("/start/:username", loginStart)
+
+	app.Post("/end/:username", loginEnd)
+
+	app.Post("/password/:username", loginPassword)
+}
+
+// Begin Login
+// @Summary begin Login
+// @Description begin the webauthn login and update the user credential to session and database
+// @Tags Logins
+// @Success 200 {Options} webauthn.Options
+// @Failure 404
+// @Router /login/start/:username [post]
+func loginStart(c *fiber.Ctx) error {
 
 	user := new(domain.UserModel)
 	user.Username = c.Params("username")
-	if user.Find() == false {
+	if !user.Find() {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 			"message": "no user with this username",
 		})
@@ -31,7 +46,7 @@ func LoginStart(c *fiber.Ctx) error {
 
 	session.SessionData = sessionData
 	session.DisplayName = user.Username
-	session.Expiration = 60 * 3
+	session.Expiration = 60 * 1000
 	go session.DeleteAfter(utils.Sessions)
 	utils.Sessions[user.Username] = session
 
@@ -39,10 +54,17 @@ func LoginStart(c *fiber.Ctx) error {
 
 }
 
-func LoginEnd(c *fiber.Ctx) error {
+// End Login
+// @Summary end Login
+// @Description end the webauthn login and update the user to session and database
+// @Tags Logins
+// @Success 200 {JWTtoken} JWT token
+// @Failure 404
+// @Router /login/end/:username [post]
+func loginEnd(c *fiber.Ctx) error {
 	user := new(domain.UserModel)
 	user.Username = c.Params("username")
-	if user.Find() == false {
+	if !user.Find() {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 			"message": "no user with this username",
 		})
@@ -51,7 +73,7 @@ func LoginEnd(c *fiber.Ctx) error {
 
 	session, ok := utils.Sessions[c.Params("username")]
 
-	if ok == false {
+	if !ok {
 
 		log.Println("session Not exist")
 		return c.Status(fiber.ErrBadRequest.Code).JSON(fiber.Map{
@@ -85,7 +107,7 @@ func LoginEnd(c *fiber.Ctx) error {
 	go session.DeleteAfter(utils.Sessions)
 
 	utils.Sessions[user.Username] = session
-	user.Credentals = append(user.Credentals, *creds)
+	user.Credentials = append(user.Credentials, *creds)
 
 	user.SaveCredentials()
 
@@ -94,11 +116,18 @@ func LoginEnd(c *fiber.Ctx) error {
 	})
 }
 
-func LoginPassword(c *fiber.Ctx) error {
+// Password Login
+// @Summary password Login
+// @Description set a password login for users
+// @Tags Logins
+// @Success 200 {JWTtoken} JWT token
+// @Failure 404
+// @Router /login/password/:username [post]
+func loginPassword(c *fiber.Ctx) error {
 
 	user := new(domain.UserModel)
 	user.Username = c.Params("username")
-	if user.Find() == false {
+	if !user.Find() {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 			"message": "no user with this username",
 		})

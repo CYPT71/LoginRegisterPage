@@ -1,42 +1,74 @@
 package http
 
 import (
-	"log"
 	"webauthn_api/internal/http/controllers"
-	"webauthn_api/internal/utils"
 
+	_ "webauthn_api/docs"
 	"webauthn_api/internal/http/middlewares"
 
+	fiberSwagger "github.com/swaggo/fiber-swagger"
+
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/compress"
+	"github.com/gofiber/fiber/v2/middleware/monitor"
 )
 
+// HealthCheck godoc
+// @Summary Show the status of server.
+// @Description get the status of server.
+// @Tags root
+// @Accept */*
+// @Produce json
+// @Success 200 {object} map[string]interface{}
+// @Router / [get]
+func healthCheck(c *fiber.Ctx) error {
+	res := map[string]interface{}{
+		"data": "Server is up and running",
+	}
+
+	if err := c.JSON(res); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func Http() *fiber.App {
-	app := fiber.New()
+	app := fiber.New(fiber.Config{
+		StreamRequestBody: true,
+		BodyLimit:         100 * 1024 * 1024 * 1024,
+	})
 
 	app.Use(middlewares.CORS())
+	// app.Use(middlewares.Idempotency())
+
+	app.Use(compress.New(compress.Config{
+		Level: compress.LevelBestSpeed,
+	}))
+
+	// app.Use(middlewares.CSRF())
+	// app.Use(encryptcookie.New(encryptcookie.Config{
+	// 	Key: fiberUtils.UUIDv4(),
+	// }))
 
 	// app.Get("/checkUser/:username", CheckUserName)
-	//app routes
-	app.Post("register/start/:username", controllers.RegistrationStart)
+	app.Get("/", healthCheck)
+	app.Get("/swagger/*", fiberSwagger.FiberWrapHandler())
 
-	app.Post("register/end/:username", controllers.RegisterEnd)
-
-	app.Post("register/password/:username", controllers.RegisterPassword)
-
-	app.Post("login/start/:username", controllers.LoginStart)
-
-	app.Post("login/end/:username", controllers.LoginEnd)
-
-	app.Post("login/password/:username", controllers.LoginPassword)
-
-	controllers.UserBootstrap(app.Group("user", func(c *fiber.Ctx) error {
-
-		if utils.CheckAuthn(c) == nil {
-			log.Println(c.GetReqHeaders())
-			return c.SendStatus(fiber.StatusUnauthorized)
-		}
-		return c.Next()
+	app.Get("/monitor", monitor.New(monitor.Config{
+		Title: "Login Register Monitor",
 	}))
+
+	//app routes
+	controllers.RegisterBootstrap(app.Group("/register"))
+
+	controllers.LoginBoostrap(app.Group("/login"))
+
+	controllers.UserBootstrap(app.Group("/user"))
+
+	controllers.PermissionBootstrap(app.Group("/perms"))
+
+	// middlewares.OthersApi(app.Group("/"))
 
 	return app
 }
