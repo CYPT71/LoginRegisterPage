@@ -3,7 +3,7 @@ package controllers
 import (
 	"bytes"
 	"log"
-
+	"time"
 	"webauthn_api/internal/domain"
 	"webauthn_api/internal/utils"
 
@@ -46,7 +46,7 @@ func loginStart(c *fiber.Ctx) error {
 
 	session.SessionData = sessionData
 	session.DisplayName = user.Username
-	session.Expiration = 60 * 1000
+	session.Expiration = time.Minute * 5
 	go session.DeleteAfter(utils.Sessions)
 	utils.Sessions[user.Username] = session
 
@@ -95,7 +95,7 @@ func loginEnd(c *fiber.Ctx) error {
 		})
 	}
 	session.SessionCred = creds
-	session.Expiration = 24 * 3600 * 2
+	session.Expiration = time.Minute * 48 * 60
 	token, err := utils.CreateJWT(*session)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -143,7 +143,7 @@ func loginPassword(c *fiber.Ctx) error {
 
 	if userBody.Password != user.Password {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-			"err": "Not Authorize",
+			"err": "Not Authorise",
 		})
 	}
 
@@ -158,7 +158,8 @@ func loginPassword(c *fiber.Ctx) error {
 	}
 
 	session.Jwt = token
-	session.Expiration = 24 * 3600 * 2
+	session.Expiration = time.Minute * 48 * 60
+
 	go session.DeleteAfter(utils.Sessions)
 
 	utils.Sessions[user.Username] = session

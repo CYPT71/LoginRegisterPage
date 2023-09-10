@@ -14,43 +14,46 @@ import (
 type UserSessions struct {
 	SessionData *webauthn.SessionData `json:"-"`
 	SessionCred *webauthn.Credential  `json:"-"`
+	UserIp      []string              `json:"-"`
 	DisplayName string
 	Jwt         string
-	Expiration  uint64 `json:"-"`
+	Expiration  time.Duration `json:"-"`
 }
 
 func (session *UserSessions) DeleteAfter(sessions map[string]*UserSessions) {
 
-	if session.Expiration > 0 {
-		time.Sleep(time.Second)
-		session.Expiration -= 1
-		session.DeleteAfter(sessions)
-		return
+	// Check user conditions for deletion
+	user := UserModel{
+		Username: session.DisplayName,
 	}
-
-	log.Printf("user delete")
-
-	user := UserModel{}
-
-	user.Username = session.DisplayName
-
 	userModel := user.Get()
 
-	if user.Password == "" && user.Incredentials == "" {
+	if userModel.Password == "" && userModel.Incredentials == "" {
 		userModel.Delete()
+		log.Printf("User deleted: %s", session.DisplayName)
 	}
 
-	delete(sessions, session.DisplayName)
+	timer := time.NewTimer(session.Expiration)
+
+	go func() {
+		<-timer.C // Wait for the timer to expire
+		log.Printf("Session expired for user: %s", session.DisplayName)
+
+		// Delete the session from the sessions map
+		delete(sessions, session.DisplayName)
+
+	}()
+
 }
 
 type UserModel struct {
-	Id            uint      `gorm:"primarykey;autoIncrement;not null"`
-	Icon          string    `gorm:"type:varchar(255);"`
-	Username      string    `gorm:"type:varchar(255);not null"`
-	Email         string    `gorm:"type:varchar(255);"`
-	Password      string    `gorm:"type:varchar(255);"`
-	Permission    uint64    `gorm:"type:bigint"`
-	Incredentials string    `gorm:"column:credentials type:text"`
+	Id            uint   `gorm:"primarykey;autoIncrement;not null"`
+	Icon          string `gorm:"type:varchar(255);"`
+	Username      string `gorm:"type:varchar(255);not null"`
+	Email         string `gorm:"type:varchar(255);"`
+	Password      string `gorm:"type:varchar(255);"`
+	Permission    uint64 `gorm:"type:bigint"`
+	Incredentials string `gorm:"column:credentials type:text"`
 	webauthn.User `gorm:"-" json:"-"`
 	Credentials   []webauthn.Credential `gorm:"-"`
 }

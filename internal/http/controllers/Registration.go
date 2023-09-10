@@ -153,7 +153,7 @@ func registerPassword(c *fiber.Ctx) error {
 
 	if user.Find() {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-			"err": "not authorize",
+			"err": "not authorise",
 		})
 	}
 
