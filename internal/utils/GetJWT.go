@@ -2,17 +2,24 @@ package utils
 
 import (
 	"log"
-
 	"math/rand"
+	"os"
 
 	"webauthn_api/internal/domain"
 
-	"github.com/google/uuid"
-
 	"github.com/golang-jwt/jwt"
+	"github.com/google/uuid"
 )
 
-var sampleSecretKey = []byte(generateKey(20))
+var sampleSecretKey []byte
+
+func init() {
+	key := os.Getenv("JWTSecret")
+	if key == "" {
+		key = generateKey(20)
+	}
+	sampleSecretKey = []byte(key)
+}
 
 const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 

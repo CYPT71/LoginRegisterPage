@@ -227,6 +227,7 @@ async function loadUser() {
     );
     document.getElementById("user-section").style.display = "block";
   }
+
 }
 
 loadUser();
