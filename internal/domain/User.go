@@ -7,6 +7,8 @@ import (
 	"strings"
 	"time"
 
+	"golang.org/x/crypto/bcrypt"
+
 	"github.com/duo-labs/webauthn/protocol"
 	"github.com/duo-labs/webauthn/webauthn"
 )
@@ -86,6 +88,19 @@ func (user *UserModel) ParseCredentials() {
 		}
 		user.Credentials = append(user.Credentials, *cred)
 	}
+}
+
+func (user *UserModel) SetPassword(password string) error {
+	hashed, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+	user.Password = string(hashed)
+	return nil
+}
+
+func (user *UserModel) ComparePassword(password string) bool {
+	return bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)) == nil
 }
 
 func (user *UserModel) Create() error {

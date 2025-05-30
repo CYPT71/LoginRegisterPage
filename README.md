@@ -49,6 +49,28 @@ go mod tidy
 go run .
 ```
 
+## Environment variables
+
+Set the following variables in a `.env` file or your shell. `JWTSecret` is optional but recommended in production.
+
+```
+PostgresHost=localhost
+PostgresUser=postgres
+PostgresPassword=admin
+PostgresDatabase=postgres
+PostgresPort=5432
+APIS=http://127.0.0.1:5000
+Origins=http://localhost:8080
+RPDisplayName=LocalTest
+RPID=localhost
+RPOrigin=http://localhost:8080
+RPIcon=https://duo.com/logo.png
+AppListen=":3000"
+JWTSecret=supersecret
+```
+
+Passwords are stored hashed with bcrypt. If `JWTSecret` is not set the server generates a random key at startup which invalidates tokens on restart.
+
 New terminal or same
 
 ```sh

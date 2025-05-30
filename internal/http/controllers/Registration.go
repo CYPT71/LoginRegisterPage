@@ -170,6 +170,12 @@ func registerPassword(c *fiber.Ctx) error {
 		})
 	}
 
+	if err := user.SetPassword(user.Password); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"err": err.Error(),
+		})
+	}
+
 	session := new(domain.UserSessions)
 
 	session.DisplayName = user.Username
