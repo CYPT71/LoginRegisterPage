@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login/Register</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Login Register Demo</h1>
+
+    <section id="register-section">
+        <h2>Register</h2>
+        <input type="text" id="reg-username" placeholder="Username">
+        <input type="password" id="reg-password" placeholder="Password">
+        <button id="register-btn">Register</button>
+        <p id="register-msg"></p>
+    </section>
+
+    <section id="login-section">
+        <h2>Login</h2>
+        <input type="text" id="login-username" placeholder="Username">
+        <input type="password" id="login-password" placeholder="Password">
+        <button id="login-btn">Login</button>
+        <p id="login-msg"></p>
+    </section>
+
+    <section id="user-section" style="display:none;">
+        <h2>User Info</h2>
+        <pre id="user-info"></pre>
+        <button id="logout-btn">Logout</button>
+    </section>
+
+    <script src="app.js"></script>
+</body>
+</html>
