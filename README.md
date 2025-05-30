@@ -52,7 +52,13 @@ go run .
 New terminal or same
 
 ```sh
-cd front
-npm i 
-npm run serve
+# start the frontend (optional)
+# you can serve the `public` directory or simply open `public/index.html`
+# when the server is running go to http://localhost:3000/ui/
 ```
+
+The demo frontend includes buttons for password and WebAuthn flows. For WebAuthn
+registration and login the page uses the Fetch API and browser WebAuthn APIs.
+Tokens returned by `/register/end/:username` or `/login/end/:username` are saved
+to `localStorage` and sent in the `Authorization` header for authenticated
+requests.

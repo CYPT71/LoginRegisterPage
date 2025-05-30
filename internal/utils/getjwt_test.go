@@ -30,3 +30,11 @@ func TestCheckJWTNilSessionData(t *testing.T) {
 		t.Fatalf("expected token to be valid even without session data")
 	}
 }
+
+func TestCreateJWT(t *testing.T) {
+	session := domain.UserSessions{DisplayName: "alice"}
+	token, err := CreateJWT(session)
+	if err != nil || token == "" {
+		t.Fatalf("token should be created")
+	}
+}
