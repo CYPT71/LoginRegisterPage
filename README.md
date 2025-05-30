@@ -52,7 +52,7 @@ go run .
 New terminal or same
 
 ```sh
-cd front
-npm i 
-npm run serve
+# start the frontend (optional)
+# you can serve the `public` directory or simply open `public/index.html`
+# when the server is running go to http://localhost:3000/ui/
 ```
