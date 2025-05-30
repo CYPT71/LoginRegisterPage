@@ -67,7 +67,7 @@ func CheckJWT(session *domain.UserSessions, tokenString string) bool {
 		if val == session.DisplayName {
 			i |= 1 << 1
 		}
-		if val == string(session.SessionData.UserID) {
+		if session.SessionData != nil && val == string(session.SessionData.UserID) {
 			i |= 1 << 0
 		}
 	}

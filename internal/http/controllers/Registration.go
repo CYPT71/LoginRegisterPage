@@ -3,6 +3,7 @@ package controllers
 import (
 	"bytes"
 	"log"
+	"time"
 
 	"webauthn_api/internal/domain"
 	"webauthn_api/internal/utils"
@@ -41,7 +42,7 @@ func registrationStart(c *fiber.Ctx) error {
 	}
 
 	if user.Find() {
-		if len(user.Credentials) < 0 && user.Password == "" {
+		if len(user.Credentials) > 0 && user.Password == "" {
 			log.Printf("Find user")
 			return c.Status(401).JSON(fiber.Map{
 				"message": "Find user",
@@ -62,7 +63,7 @@ func registrationStart(c *fiber.Ctx) error {
 	session := new(domain.UserSessions)
 	session.DisplayName = options.Response.User.Name
 	session.SessionData = sessionData
-	session.Expiration = 3600
+	session.Expiration = time.Hour
 
 	go session.DeleteAfter(utils.Sessions)
 
@@ -122,7 +123,7 @@ func registerEnd(c *fiber.Ctx) error {
 	user.SaveCredentials()
 
 	session.SessionCred = creds
-	session.Expiration = 24 * 3600 * 2 * 1000
+	session.Expiration = time.Hour * 48
 
 	token, err := utils.CreateJWT(*session)
 	if err != nil {
@@ -172,7 +173,7 @@ func registerPassword(c *fiber.Ctx) error {
 	session := new(domain.UserSessions)
 
 	session.DisplayName = user.Username
-	session.Expiration = 24 * 3600 * 2
+	session.Expiration = time.Hour * 48
 
 	token, err := utils.CreateJWT(*session)
 	if err != nil {

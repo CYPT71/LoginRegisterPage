@@ -48,13 +48,14 @@ func about(c *fiber.Ctx) error {
 // @Router /user/logout [get]
 func logout(c *fiber.Ctx) error {
 	userSession := utils.CheckAuthn(c)
+	if userSession == nil {
+		return c.SendStatus(fiber.StatusUnauthorized)
+	}
 	delete(utils.Sessions, userSession.DisplayName)
 	return c.Status(200).JSON(fiber.Map{
 		"message": "logout",
 	})
 }
-
-
 
 // Edit me
 // @Summary  edit user
@@ -66,6 +67,9 @@ func logout(c *fiber.Ctx) error {
 func editUser(c *fiber.Ctx) error {
 
 	userSession := utils.CheckAuthn(c)
+	if userSession == nil {
+		return c.SendStatus(fiber.StatusUnauthorized)
+	}
 
 	userIn := new(domain.UserModel)
 	userIn.Username = userSession.DisplayName
@@ -98,6 +102,9 @@ func editUser(c *fiber.Ctx) error {
 func deleteUser(c *fiber.Ctx) error {
 	user := new(domain.UserModel)
 	userSession := utils.CheckAuthn(c)
+	if userSession == nil {
+		return c.SendStatus(fiber.StatusUnauthorized)
+	}
 	user.Username = userSession.DisplayName
 
 	user.Delete()
@@ -118,6 +125,9 @@ func deleteUser(c *fiber.Ctx) error {
 func deleteCred(c *fiber.Ctx) error {
 	user := new(domain.UserModel)
 	userSession := utils.CheckAuthn(c)
+	if userSession == nil {
+		return c.SendStatus(fiber.StatusUnauthorized)
+	}
 	user.Username = userSession.DisplayName
 	user = user.Get()
 	if user == nil {
