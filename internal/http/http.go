@@ -54,6 +54,7 @@ func Http() *fiber.App {
 	// app.Get("/checkUser/:username", CheckUserName)
 	app.Get("/", healthCheck)
 	app.Get("/swagger/*", fiberSwagger.FiberWrapHandler())
+	app.Static("/ui", "./public")
 
 	app.Get("/monitor", monitor.New(monitor.Config{
 		Title: "Login Register Monitor",

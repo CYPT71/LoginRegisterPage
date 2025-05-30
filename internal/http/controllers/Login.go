@@ -141,7 +141,7 @@ func loginPassword(c *fiber.Ctx) error {
 		})
 	}
 
-	if userBody.Password != user.Password {
+	if !user.ComparePassword(userBody.Password) {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 			"err": "Not Authorise",
 		})
