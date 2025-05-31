@@ -116,7 +116,7 @@ func (user *UserModel) ComparePassword(password string) bool {
 }
 
 func (user *UserModel) Create() error {
-	user.Permission = Permissions["owner"]
+	user.Permission = Permissions["user"]
 	tx := Db.Create(user)
 
 	return tx.Error
