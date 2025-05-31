@@ -69,6 +69,8 @@ func registrationStart(c *fiber.Ctx) error {
 
 	utils.Sessions[session.DisplayName] = session
 
+	log.Print("returned options")
+
 	return c.JSON(fiber.Map{
 		"Options": options,
 	})

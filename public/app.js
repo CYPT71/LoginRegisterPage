@@ -25,7 +25,15 @@ function arrayBufferToBase64(buffer) {
   return btoa(str).replace(/\+/g, "-").replace(/\//g, "_").replace(/=/g, "");
 }
 
+/**
+ * 
+ * @param {object} opts 
+ * @returns 
+ */
 function preformatMakeCredReq(opts) {
+  if ("Options" in opts) {
+    opts = opts.Options
+  }
   opts.publicKey.challenge = base64ToArrayBuffer(opts.publicKey.challenge);
   opts.publicKey.user.id = base64ToArrayBuffer(opts.publicKey.user.id);
   if (opts.publicKey.excludeCredentials) {
@@ -112,6 +120,7 @@ registerWebBtn.addEventListener("click", async () => {
     credential = await navigator.credentials.create({
       publicKey: preformatMakeCredReq(startData),
     });
+    
   } catch (err) {
     document.getElementById("register-msg").textContent =
       err.message || "WebAuthn error";
@@ -123,7 +132,7 @@ registerWebBtn.addEventListener("click", async () => {
     {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(publicKeyCredentialToJSON(credential)),
+      body: publicKeyCredentialToJSON(credential),
     },
   );
   const endData = await endRes.json();
@@ -134,7 +143,10 @@ registerWebBtn.addEventListener("click", async () => {
     loadUser();
   } else {
     document.getElementById("register-msg").textContent =
-      endData.err || "Error";
+      JSON.stringify(endData.err) || "Error";
+
+
+    window.endData = endData
   }
 });
 

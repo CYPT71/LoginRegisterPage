@@ -1,14 +1,16 @@
 package utils
 
 import (
-	"github.com/gofiber/fiber/v2"
 	"testing"
 	"webauthn_api/internal/domain"
+
+	"github.com/gofiber/fiber/v2"
+	"github.com/valyala/fasthttp"
 )
 
 func TestCheckAuthn(t *testing.T) {
 	app := fiber.New()
-	req := app.AcquireCtx(&fiber.Ctx{})
+	req := app.AcquireCtx(&fasthttp.RequestCtx{})
 	session := &domain.UserSessions{DisplayName: "bob"}
 	token, err := CreateJWT(*session)
 	if err != nil {

@@ -10,7 +10,8 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: admin
     volumes:
-      - local_pgdata:/var/lib/postgresql/data
+      - ./postgres_data:/var/lib/postgresql/data
+
   pgadmin:
     image: dpage/pgadmin4
     container_name: pgadmin4_container
@@ -21,9 +22,10 @@ services:
       PGADMIN_DEFAULT_EMAIL: contact@cyprientaib.com
       PGADMIN_DEFAULT_PASSWORD: admin
     volumes:
-      - pgadmin-data:/var/lib/pgadmin
-      - "local_pgdb"
-  
-volumes:
-  local_pgdata:
-  pgadmin-data:
+      - ./pgadmin_data:/var/lib/pgadmin
+
+# No named volumes needed when using bind mounts
+# volumes:
+#   local_pgdata:
+#   pgadmin-data:
+
