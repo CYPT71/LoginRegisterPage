@@ -5,6 +5,8 @@ const registerWebBtn = document.getElementById("register-webauthn-btn");
 const loginBtn = document.getElementById("login-btn");
 const loginWebBtn = document.getElementById("login-webauthn-btn");
 const logoutBtn = document.getElementById("logout-btn");
+const listUsersbtn = document.getElementById("list-users-btn")
+const listUsers = document.getElementById("list-users")
 
 function base64ToArrayBuffer(base64) {
   const binary = atob(base64.replace(/-/g, "+").replace(/_/g, "/"));
@@ -252,6 +254,7 @@ loginWebBtn.addEventListener("click", async () => {
 logoutBtn.addEventListener("click", () => {
   localStorage.removeItem("token");
   document.getElementById("user-section").style.display = "none";
+  document.getElementById("users-section").style.display = "none";
 });
 
 async function loadUser() {
@@ -274,4 +277,23 @@ async function loadUser() {
 
 }
 
+
+listUsersbtn.addEventListener("click",async  () => {
+  const token = localStorage.getItem("token");
+  if (!token) return;
+  const res = await fetch(`${API_BASE}/user/all`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  if (res.ok) {
+    const user = await res.json();
+    document.getElementById("list-users").textContent = JSON.stringify(
+      user,
+      null,
+      2,
+    );
+    document.getElementById("users-section").style.display = "block";
+  }
+})
 loadUser();

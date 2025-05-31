@@ -13,6 +13,8 @@ func UserBootstrap(app fiber.Router) {
 
 	app.Get("/", about)
 
+	app.Get("/all", allUsers)
+
 	app.Get("/logout", logout)
 
 	app.Patch("/", editUser)
@@ -38,6 +40,38 @@ func about(c *fiber.Ctx) error {
 	}
 	user.Username = userSession.DisplayName
 	return c.Status(200).JSON(user.Get())
+}
+
+// Logout
+// @Summary Just Logout
+// @Tags Users
+// @Success 200 {array} domain.UserModel
+// @Unthorized 401
+// @Failure 500 nil object
+// @Router /user/all
+func allUsers(c *fiber.Ctx) error {
+
+	userSession := utils.CheckAuthn(c)
+	if userSession == nil {
+		return c.SendStatus(fiber.StatusUnauthorized)
+	}
+
+	user := new(domain.UserModel)
+	user.Username = userSession.DisplayName
+
+	if user == nil || user.Get().Permission&domain.Permissions["owner"] != 1 {
+		return c.SendStatus(401)
+	}
+
+	users, err := domain.GetAllUsers()
+
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"err": err.Error(),
+		})
+	}
+
+	return c.Status(200).JSON(users)
 }
 
 // Logout

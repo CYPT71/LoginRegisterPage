@@ -86,7 +86,6 @@ func registerEnd(c *fiber.Ctx) error {
 	user := new(domain.UserModel)
 	user.Username = c.Params("username")
 
-	log.Println(string(c.Body()))
 	credential, err := protocol.ParseCredentialCreationResponseBody(bytes.NewReader(c.Body()))
 
 	if err != nil {
@@ -94,6 +93,8 @@ func registerEnd(c *fiber.Ctx) error {
 			"err": err,
 		})
 	}
+
+	log.Println(utils.Sessions[user.Username])
 
 	if !user.Find() {
 		return c.Status(403).JSON(fiber.Map{

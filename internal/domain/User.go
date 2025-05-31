@@ -24,22 +24,22 @@ type UserSessions struct {
 
 func (session *UserSessions) DeleteAfter(sessions map[string]*UserSessions) {
 
-	// Check user conditions for deletion
-	user := UserModel{
-		Username: session.DisplayName,
-	}
-	userModel := user.Get()
-
-	if userModel.Password == "" && userModel.Incredentials == "" {
-		userModel.Delete()
-		log.Printf("User deleted: %s", session.DisplayName)
-	}
-
 	timer := time.NewTimer(session.Expiration)
 
 	go func() {
 		<-timer.C // Wait for the timer to expire
 		log.Printf("Session expired for user: %s", session.DisplayName)
+
+		// Check user conditions for deletion
+		user := UserModel{
+			Username: session.DisplayName,
+		}
+		userModel := user.Get()
+
+		if userModel.Password == "" && userModel.Incredentials == "" {
+			// userModel.Delete()
+			log.Printf("User deleted: %s", session.DisplayName)
+		}
 
 		// Delete the session from the sessions map
 		delete(sessions, session.DisplayName)
@@ -62,6 +62,18 @@ type UserModel struct {
 
 func (user *UserModel) TableName() string {
 	return "users"
+}
+
+func GetAllUsers() ([]UserModel, error) {
+	var users []UserModel
+
+	tx := Db.Find(&users)
+	if tx.Error != nil {
+		log.Println("Error:", tx.Error)
+		return nil, tx.Error
+	}
+
+	return users, nil
 }
 
 func (user *UserModel) SaveCredentials() error {
@@ -104,7 +116,7 @@ func (user *UserModel) ComparePassword(password string) bool {
 }
 
 func (user *UserModel) Create() error {
-	user.Permission = 1 << 0
+	user.Permission = Permissions["owner"]
 	tx := Db.Create(user)
 
 	return tx.Error
@@ -117,6 +129,7 @@ func (user *UserModel) Find() bool {
 	tx := Db.Where("username = ?", user.Username).Find(user)
 	return tx.RowsAffected != 0
 }
+
 func (user *UserModel) Get() *UserModel {
 
 	tx := Db.Where("username = ?", user.Username).Find(user)
