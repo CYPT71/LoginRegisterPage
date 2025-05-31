@@ -1,4 +1,4 @@
-const API_BASE = "http://localhost:3000";
+const API_BASE = "https://localhost:3000";
 
 const registerBtn = document.getElementById("register-btn");
 const registerWebBtn = document.getElementById("register-webauthn-btn");
@@ -16,14 +16,42 @@ function base64ToArrayBuffer(base64) {
   return bytes.buffer;
 }
 
-function arrayBufferToBase64(buffer) {
-  const bytes = new Uint8Array(buffer);
-  let str = "";
-  for (const b of bytes) {
-    str += String.fromCharCode(b);
-  }
-  return btoa(str).replace(/\+/g, "-").replace(/\//g, "_").replace(/=/g, "");
+function bufferToBase64url(buffer) {
+  return btoa(String.fromCharCode(...new Uint8Array(buffer)))
+    .replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 }
+
+function stringifyCredential(credential) {
+  
+  if (credential && credential.id && credential.rawId && credential.response) {
+    const json = JSON.stringify({
+      id: credential.id,
+      rawId: bufferToBase64url(credential.rawId),
+      type: credential.type,
+      response: {
+        clientDataJSON: bufferToBase64url(credential.response.clientDataJSON),
+        attestationObject: credential.response.attestationObject
+          ? bufferToBase64url(credential.response.attestationObject)
+          : undefined,
+        authenticatorData: credential.response.authenticatorData
+          ? bufferToBase64url(credential.response.authenticatorData)
+          : undefined,
+        signature: credential.response.signature
+          ? bufferToBase64url(credential.response.signature)
+          : undefined,
+        userHandle: credential.response.userHandle
+          ? bufferToBase64url(credential.response.userHandle)
+          : undefined,
+      },
+    });
+    
+    return json
+
+  } else {
+    throw new Error("Not a valid credential object");
+  }
+}
+
 
 /**
  * 
@@ -65,7 +93,7 @@ function publicKeyCredentialToJSON(cred) {
     return cred.map((x) => publicKeyCredentialToJSON(x));
   }
   if (cred instanceof ArrayBuffer) {
-    return arrayBufferToBase64(cred);
+    return bufferToBase64url(cred);
   }
   if (cred && typeof cred === "object") {
     const obj = {};
@@ -116,10 +144,13 @@ registerWebBtn.addEventListener("click", async () => {
   }
 
   let credential;
+  let json;
   try {
     credential = await navigator.credentials.create({
       publicKey: preformatMakeCredReq(startData),
-    });
+    })
+
+
     
   } catch (err) {
     document.getElementById("register-msg").textContent =
@@ -127,14 +158,15 @@ registerWebBtn.addEventListener("click", async () => {
     return;
   }
 
+
   const endRes = await fetch(
     `${API_BASE}/register/end/${encodeURIComponent(username)}`,
     {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: publicKeyCredentialToJSON(credential),
+      body: stringifyCredential(credential),
     },
   );
+
   const endData = await endRes.json();
   if (endRes.ok) {
     localStorage.setItem("token", endData.token);
@@ -203,7 +235,7 @@ loginWebBtn.addEventListener("click", async () => {
     {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(publicKeyCredentialToJSON(credential)),
+      body:  stringifyCredential(credential),
     },
   );
   const endData = await endRes.json();

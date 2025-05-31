@@ -1,5 +1,5 @@
 package utils
 
-import "github.com/duo-labs/webauthn/webauthn"
+import "github.com/go-webauthn/webauthn/webauthn"
 
 var Web *webauthn.WebAuthn

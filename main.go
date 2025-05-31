@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 	"webauthn_api/internal/domain"
 	"webauthn_api/internal/http"
 	"webauthn_api/internal/utils"
@@ -14,7 +15,7 @@ import (
 
 	_ "webauthn_api/docs"
 
-	"github.com/duo-labs/webauthn/webauthn"
+	"github.com/go-webauthn/webauthn/webauthn"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -34,8 +35,8 @@ func main() {
 	postgresPort := os.Getenv("PostgresPort")
 	RPDiplayName := os.Getenv("RPDisplayName")
 	RPID := os.Getenv("RPID")
-	ROrigin := os.Getenv("RPOrigin")
-	RPIcon := os.Getenv("RPIcon")
+	ROrigin := strings.Split(os.Getenv("RPOrigin"), ", ")
+	// RPIcon := os.Getenv("RPIcon")
 	appListen := os.Getenv("AppListen")
 
 	utils.Sessions = make(map[string]*domain.UserSessions)
@@ -55,14 +56,14 @@ func main() {
 	utils.Web, err = webauthn.New(&webauthn.Config{
 		RPDisplayName: RPDiplayName, // Display Name for your site
 		RPID:          RPID,         // Generally the FQDN for your site
-		RPOrigin:      ROrigin,      // The origin URL for WebAuthn requests
-		RPIcon:        RPIcon,       // Optional icon URL for your site
+		RPOrigins:     ROrigin,      // The origin URL for WebAuthn requests
+		// :        RPIcon,       // Optional icon URL for your site
 	})
 	if err != nil {
 		fmt.Println(err)
 	}
 
 	//app run
-	log.Fatal(http.Http().Listen(appListen))
+	log.Fatal(http.Http().ListenTLS(appListen, "./certs/server.crt", "./certs/server.key"))
 
 }

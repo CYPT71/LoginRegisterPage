@@ -1,9 +1,10 @@
 package domain
 
 import (
-	"github.com/duo-labs/webauthn/protocol"
-	"github.com/duo-labs/webauthn/webauthn"
 	"testing"
+
+	"github.com/go-webauthn/webauthn/protocol"
+	"github.com/go-webauthn/webauthn/webauthn"
 )
 
 func TestWebAuthnFields(t *testing.T) {

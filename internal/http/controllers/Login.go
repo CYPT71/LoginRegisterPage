@@ -7,7 +7,7 @@ import (
 	"webauthn_api/internal/domain"
 	"webauthn_api/internal/utils"
 
-	"github.com/duo-labs/webauthn/protocol"
+	"github.com/go-webauthn/webauthn/protocol"
 	"github.com/gofiber/fiber/v2"
 )
 

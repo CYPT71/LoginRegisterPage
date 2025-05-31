@@ -8,7 +8,7 @@ import (
 	"webauthn_api/internal/domain"
 	"webauthn_api/internal/utils"
 
-	"github.com/duo-labs/webauthn/protocol"
+	"github.com/go-webauthn/webauthn/protocol"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -69,8 +69,6 @@ func registrationStart(c *fiber.Ctx) error {
 
 	utils.Sessions[session.DisplayName] = session
 
-	log.Print("returned options")
-
 	return c.JSON(fiber.Map{
 		"Options": options,
 	})
@@ -88,6 +86,7 @@ func registerEnd(c *fiber.Ctx) error {
 	user := new(domain.UserModel)
 	user.Username = c.Params("username")
 
+	log.Println(string(c.Body()))
 	credential, err := protocol.ParseCredentialCreationResponseBody(bytes.NewReader(c.Body()))
 
 	if err != nil {

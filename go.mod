@@ -5,7 +5,7 @@ go 1.23.0
 toolchain go1.24.3
 
 require (
-	github.com/duo-labs/webauthn v0.0.0-20221205164246-ebaf9b74c6ec
+	github.com/go-webauthn/webauthn v0.13.0
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/google/uuid v1.6.0
 	github.com/joho/godotenv v1.5.1
@@ -16,15 +16,14 @@ require (
 
 require (
 	github.com/KyleBanks/depth v1.2.1 // indirect
-	github.com/cloudflare/cfssl v1.6.3 // indirect
 	github.com/fxamacker/cbor/v2 v2.8.0 // indirect
 	github.com/go-openapi/jsonpointer v0.19.6 // indirect
 	github.com/go-openapi/jsonreference v0.20.2 // indirect
 	github.com/go-openapi/spec v0.20.8 // indirect
 	github.com/go-openapi/swag v0.22.3 // indirect
-	github.com/go-webauthn/webauthn v0.13.0 // indirect
-	github.com/golang-jwt/jwt/v4 v4.5.0 // indirect
-	github.com/google/certificate-transparency-go v1.1.4 // indirect
+	github.com/go-webauthn/x v0.1.21 // indirect
+	github.com/golang-jwt/jwt/v5 v5.2.2 // indirect
+	github.com/google/go-tpm v0.9.5 // indirect
 	github.com/jackc/pgx/v5 v5.3.1 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect

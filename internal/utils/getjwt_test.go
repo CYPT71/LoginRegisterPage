@@ -1,9 +1,10 @@
 package utils
 
 import (
-	"github.com/duo-labs/webauthn/webauthn"
 	"testing"
 	"webauthn_api/internal/domain"
+
+	"github.com/go-webauthn/webauthn/webauthn"
 )
 
 func TestCheckJWTValid(t *testing.T) {
