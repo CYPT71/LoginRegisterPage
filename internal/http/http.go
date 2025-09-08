@@ -22,7 +22,7 @@ import (
 // @Success 200 {object} map[string]interface{}
 // @Router / [get]
 func healthCheck(c *fiber.Ctx) error {
-	res := map[string]interface{}{
+	res := map[string]any{
 		"data": "Server is up and running",
 	}
 

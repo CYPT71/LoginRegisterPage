@@ -1,3 +1,5 @@
 userApi.exe
 userApi
 /certs/
+postgres_data/
+.env

@@ -5,7 +5,6 @@ package utils
  */
 
 import (
-	"strings"
 	"webauthn_api/internal/domain"
 
 	"github.com/gofiber/fiber/v2"
@@ -14,11 +13,11 @@ import (
 var Sessions map[string]*domain.UserSessions
 
 func CheckAuthn(c *fiber.Ctx) *domain.UserSessions {
-	value, ok := c.GetReqHeaders()["Authorization"]
-	if ok == false {
+	authType, ok := c.GetReqHeaders()["Authorization"]
+	if !ok {
 		return nil
 	}
-	authType := strings.Split(value, " ")
+
 	if authType[0] != "Bearer" || len(authType) < 2 {
 		return nil
 	}

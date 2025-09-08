@@ -7,12 +7,10 @@ import (
 
 func CORS() fiber.Handler {
 	return cors.New(cors.Config{
-		Next:             nil,
-		AllowOrigins:     "*",
-		AllowMethods:     "GET,POST,HEAD,PUT,DELETE,PATCH",
-		AllowHeaders:     "",
-		AllowCredentials: true,
-		ExposeHeaders:    "",
-		MaxAge:           0,
+		Next:          nil,
+		AllowMethods:  "GET,POST,HEAD,PUT,DELETE,PATCH",
+		AllowHeaders:  "",
+		ExposeHeaders: "",
+		MaxAge:        0,
 	})
 }
