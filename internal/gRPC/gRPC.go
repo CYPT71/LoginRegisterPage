@@ -3,6 +3,9 @@ package grpc
 import (
 	"log"
 
+	_ "webauthn_api/internal/gRPC/codec"
+	"webauthn_api/internal/gRPC/rpc"
+
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/health"
@@ -27,6 +30,8 @@ func Grpc(GRPCAddr string, TLSCertFile string, TLSKeyFile string) *grpc.Server {
 	app := grpc.NewServer(serverOpts...)
 
 	// Services
+	rpc.RegisterAuthServiceServer(app, &rpc.AuthService{})
+	rpc.RegisterUserServiceServer(app, &rpc.UserService{})
 
 	// Health + reflection (utile pour debug/evans)
 	healthSrv := health.NewServer()

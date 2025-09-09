@@ -49,6 +49,9 @@ go mod tidy
 go run .
 ```
 
+The compose file now also provides a Redis instance exposed on `6379` used to
+store user sessions when `SessionStore=redis`.
+
 ## Environment variables
 
 Set the following variables in a `.env` file or your shell. `JWTSecret` is optional but recommended in production.
@@ -66,6 +69,10 @@ RPID=localhost
 RPOrigin=http://localhost:8080
 RPIcon=https://duo.com/logo.png
 AppListen=":3000"
+GRPCListen=":50051"
+AppProtocol=http # or grpc
+SessionStore=memory # or redis
+REDIS_ADDR=localhost:6379
 JWTSecret=supersecret
 ```
 
