@@ -35,10 +35,8 @@ func registrationStart(c *fiber.Ctx) error {
 
 	user.Username = c.Params("username")
 
-	_, ok := utils.Sessions[user.Username]
-
-	if ok {
-		delete(utils.Sessions, user.Username)
+	if _, ok := utils.GetSession(user.Username); ok {
+		utils.DeleteSession(user.Username)
 	}
 
 	if user.Find() {
@@ -65,9 +63,9 @@ func registrationStart(c *fiber.Ctx) error {
 	session.SessionData = sessionData
 	session.Expiration = time.Hour
 
-	go session.DeleteAfter(utils.Sessions)
+	go session.DeleteAfter(utils.DeleteSession)
 
-	utils.Sessions[session.DisplayName] = session
+	utils.SaveSession(session)
 
 	return c.JSON(fiber.Map{
 		"Options": options,
@@ -94,7 +92,8 @@ func registerEnd(c *fiber.Ctx) error {
 		})
 	}
 
-	log.Println(utils.Sessions[user.Username])
+	s, _ := utils.GetSession(user.Username)
+	log.Println(s)
 
 	if !user.Find() {
 		return c.Status(403).JSON(fiber.Map{
@@ -102,7 +101,7 @@ func registerEnd(c *fiber.Ctx) error {
 		})
 	}
 
-	session, ok := utils.Sessions[user.Username]
+	session, ok := utils.GetSession(user.Username)
 
 	if !ok {
 		log.Println("session not exist for user: ", user.Username)
@@ -135,10 +134,10 @@ func registerEnd(c *fiber.Ctx) error {
 	}
 
 	session.Jwt = token
-	go session.DeleteAfter(utils.Sessions)
+	go session.DeleteAfter(utils.DeleteSession)
 
-	delete(utils.Sessions, user.Username)
-	utils.Sessions[user.Username] = session
+	utils.DeleteSession(user.Username)
+	utils.SaveSession(session)
 
 	return c.JSON(fiber.Map{
 		"token": session.Jwt,
@@ -193,8 +192,8 @@ func registerPassword(c *fiber.Ctx) error {
 	}
 
 	session.Jwt = token
-	utils.Sessions[user.Username] = session
-	go session.DeleteAfter(utils.Sessions)
+	utils.SaveSession(session)
+	go session.DeleteAfter(utils.DeleteSession)
 
 	user.Create()
 

@@ -25,7 +25,7 @@ type UserSessions struct {
 	Expiration  time.Duration `json:"-"`
 }
 
-func (session *UserSessions) DeleteAfter(sessions map[string]*UserSessions) {
+func (session *UserSessions) DeleteAfter(onExpire OnExpire) {
 
 	timer := time.NewTimer(session.Expiration)
 
@@ -45,8 +45,9 @@ func (session *UserSessions) DeleteAfter(sessions map[string]*UserSessions) {
 			}
 		}
 
-		// Delete the session from the sessions map
-		delete(sessions, session.DisplayName)
+		if onExpire != nil {
+			onExpire(session.DisplayName)
+		}
 
 	}()
 
