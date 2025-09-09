@@ -5,20 +5,20 @@ go 1.24.0
 toolchain go1.24.3
 
 require (
-        github.com/go-webauthn/webauthn v0.13.4
-        github.com/golang-jwt/jwt v3.2.2+incompatible
-        github.com/google/uuid v1.6.0
-        github.com/joho/godotenv v1.5.1
-    github.com/redis/go-redis/v9 v9.7.0
-    github.com/swaggo/fiber-swagger v1.3.0
-        github.com/swaggo/swag v1.16.6
-        gorm.io/driver/postgres v1.6.0
+	github.com/go-webauthn/webauthn v0.13.4
+	github.com/golang-jwt/jwt v3.2.2+incompatible
+	github.com/google/uuid v1.6.0
+	github.com/joho/godotenv v1.5.1
+	github.com/redis/go-redis/v9 v9.7.0
+	github.com/swaggo/fiber-swagger v1.3.0
+	github.com/swaggo/swag v1.16.6
+	gorm.io/driver/postgres v1.6.0
 )
 
 replace github.com/redis/go-redis/v9 => ./internal/redismock
 
 require (
-       github.com/KyleBanks/depth v1.2.1 // indirect
+	github.com/KyleBanks/depth v1.2.1 // indirect
 	github.com/fxamacker/cbor/v2 v2.9.0 // indirect
 	github.com/go-openapi/jsonpointer v0.22.0 // indirect
 	github.com/go-openapi/jsonreference v0.21.1 // indirect
