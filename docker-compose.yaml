@@ -24,6 +24,13 @@ services:
     volumes:
       - pgadmin-data:/var/lib/pgadmin
 
+  redis:
+    image: redis:7-alpine
+    container_name: local_redis
+    restart: always
+    ports:
+      - "6379:6379"
+
 # No named volumes needed when using bind mounts
 volumes:
   # local_pgdata:

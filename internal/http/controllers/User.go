@@ -85,7 +85,7 @@ func logout(c *fiber.Ctx) error {
 	if userSession == nil {
 		return c.SendStatus(fiber.StatusUnauthorized)
 	}
-	delete(utils.Sessions, userSession.DisplayName)
+	utils.DeleteSession(userSession.DisplayName)
 	return c.Status(200).JSON(fiber.Map{
 		"message": "logout",
 	})
@@ -142,7 +142,7 @@ func deleteUser(c *fiber.Ctx) error {
 	user.Username = userSession.DisplayName
 
 	user.Delete()
-	delete(utils.Sessions, user.Username)
+	utils.DeleteSession(user.Username)
 
 	return c.JSON(fiber.Map{
 		"message": "deleted",

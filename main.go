@@ -6,7 +6,8 @@ import (
 	"os"
 	"strings"
 	"webauthn_api/internal/domain"
-	"webauthn_api/internal/http"
+	grpcSrv "webauthn_api/internal/gRPC"
+	httpSrv "webauthn_api/internal/http"
 	"webauthn_api/internal/utils"
 
 	"github.com/joho/godotenv"
@@ -18,6 +19,7 @@ import (
 	"github.com/go-webauthn/webauthn/webauthn"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"net"
 )
 
 var err error
@@ -38,8 +40,9 @@ func main() {
 	ROrigin := strings.Split(os.Getenv("RPOrigin"), ", ")
 	// RPIcon := os.Getenv("RPIcon")
 	appListen := os.Getenv("AppListen")
+	grpcListen := os.Getenv("GRPCListen")
 
-	utils.Sessions = make(map[string]*domain.UserSessions)
+	utils.InitSessionStore()
 
 	// db Initialisaiton
 	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s", postgresHost, postgresUser, postgresPassword, postgresDatabase, postgresPort)
@@ -63,7 +66,19 @@ func main() {
 		fmt.Println(err)
 	}
 
-	//app run
-	log.Fatal(http.Http().ListenTLS(appListen, "./certs/server.crt", "./certs/server.key"))
+	if strings.ToLower(os.Getenv("AppProtocol")) == "grpc" {
+		addr := grpcListen
+		if addr == "" {
+			addr = ":50051"
+		}
+		lis, err := net.Listen("tcp", addr)
+		if err != nil {
+			log.Fatal(err)
+		}
+		server := grpcSrv.Grpc(addr, "./certs/server.crt", "./certs/server.key")
+		log.Fatal(server.Serve(lis))
+	} else {
+		log.Fatal(httpSrv.Http().ListenTLS(appListen, "./certs/server.crt", "./certs/server.key"))
+	}
 
 }

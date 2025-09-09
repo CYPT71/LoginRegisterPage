@@ -47,8 +47,8 @@ func loginStart(c *fiber.Ctx) error {
 	session.SessionData = sessionData
 	session.DisplayName = user.Username
 	session.Expiration = time.Minute * 5
-	go session.DeleteAfter(utils.Sessions)
-	utils.Sessions[user.Username] = session
+	go session.DeleteAfter(utils.DeleteSession)
+	utils.SaveSession(session)
 
 	return c.JSON(options)
 
@@ -71,7 +71,7 @@ func loginEnd(c *fiber.Ctx) error {
 	}
 	user.ParseCredentials()
 
-	session, ok := utils.Sessions[c.Params("username")]
+	session, ok := utils.GetSession(c.Params("username"))
 
 	if !ok {
 
@@ -104,9 +104,9 @@ func loginEnd(c *fiber.Ctx) error {
 	}
 
 	session.Jwt = token
-	go session.DeleteAfter(utils.Sessions)
+	go session.DeleteAfter(utils.DeleteSession)
 
-	utils.Sessions[user.Username] = session
+	utils.SaveSession(session)
 	user.Credentials = append(user.Credentials, *creds)
 
 	user.SaveCredentials()
@@ -160,10 +160,10 @@ func loginPassword(c *fiber.Ctx) error {
 	session.Jwt = token
 	session.Expiration = time.Minute * 48 * 60
 
-	go session.DeleteAfter(utils.Sessions)
+	go session.DeleteAfter(utils.DeleteSession)
 
-	delete(utils.Sessions, user.Username)
-	utils.Sessions[user.Username] = session
+	utils.DeleteSession(user.Username)
+	utils.SaveSession(session)
 
 	return c.JSON(fiber.Map{
 		"token": session.Jwt,

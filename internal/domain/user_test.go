@@ -52,7 +52,7 @@ func TestSessionExpired(t *testing.T) {
 	Sessions[userSession.DisplayName] = userSession
 
 	// Start expiry timer
-	go userSession.DeleteAfter(Sessions)
+	go userSession.DeleteAfter(func(name string) { delete(Sessions, name) })
 
 	// Wait a bit longer than the expiration
 	time.Sleep(4 * time.Second)
