@@ -4,6 +4,53 @@ package auth;
 
 option go_package = "webauthn_api/internal/gRPC/pb";
 
+message LoginStartRequest { string username = 1; }
+message LoginStartResponse { string options_json = 1; }
+message LoginEndRequest { string username = 1; bytes credential = 2; }
+
+message RegisterStartRequest { string username = 1; }
+message RegisterStartResponse { string options_json = 1; }
+message RegisterEndRequest { string username = 1; bytes credential = 2; }
+message RegisterPasswordRequest { string username = 1; string password = 2; }
+
+message TokenResponse { string token = 1; }
+
+message Empty {}
+message MessageResponse { string message = 1; }
+message EditUserRequest { string email = 1; string password = 2; }
+message UserModel {
+  uint64 id = 1;
+  string icon = 2;
+  string username = 3;
+  string email = 4;
+  string password = 5;
+  uint64 permission = 6;
+  string incredentials = 7;
+}
+message UsersResponse { repeated UserModel users = 1; }
+
+service AuthService {
+  rpc LoginStart(LoginStartRequest) returns (LoginStartResponse);
+  rpc LoginEnd(LoginEndRequest) returns (TokenResponse);
+  rpc RegisterStart(RegisterStartRequest) returns (RegisterStartResponse);
+  rpc RegisterEnd(RegisterEndRequest) returns (TokenResponse);
+  rpc RegisterPassword(RegisterPasswordRequest) returns (TokenResponse);
+}
+
+service UserService {
+  rpc About(Empty) returns (UserModel);
+  rpc All(Empty) returns (UsersResponse);
+  rpc Logout(Empty) returns (MessageResponse);
+  rpc Edit(EditUserRequest) returns (UserModel);
+  rpc Delete(Empty) returns (MessageResponse);
+  rpc DeleteCred(Empty) returns (UserModel);
+}
+syntax = "proto3";
+
+package auth;
+
+option go_package = "webauthn_api/internal/gRPC/pb";
+
 message LoginStartRequest {
   string username = 1;
 }
