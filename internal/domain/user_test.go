@@ -1,7 +1,9 @@
 package domain
 
 import (
+	"os"
 	"testing"
+	"time"
 
 	"github.com/go-webauthn/webauthn/protocol"
 	"github.com/go-webauthn/webauthn/webauthn"
@@ -32,5 +34,31 @@ func TestCredentialExcludeList(t *testing.T) {
 	}
 	if string(list[0].CredentialID) != string(cred.ID) {
 		t.Fatalf("wrong id")
+	}
+}
+
+func TestSessionExpired(t *testing.T) {
+
+	os.Setenv("test", "true")
+
+	// Always initialize the map
+	Sessions := make(map[string]*UserSessions)
+
+	// Create a short-lived session
+	userSession := &UserSessions{
+		Expiration:  time.Second * 3, // 1s for faster test
+		DisplayName: "Test",
+	}
+	Sessions[userSession.DisplayName] = userSession
+
+	// Start expiry timer
+	go userSession.DeleteAfter(Sessions)
+
+	// Wait a bit longer than the expiration
+	time.Sleep(4 * time.Second)
+
+	// Now the session should be gone
+	if _, ok := Sessions[userSession.DisplayName]; ok {
+		t.Fatal("expected session to be deleted after expiration")
 	}
 }

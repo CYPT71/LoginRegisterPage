@@ -4,6 +4,7 @@ import (
 	"encoding/binary"
 	"encoding/json"
 	"log"
+	"os"
 	"strings"
 	"time"
 
@@ -12,6 +13,8 @@ import (
 	"github.com/go-webauthn/webauthn/protocol"
 	"github.com/go-webauthn/webauthn/webauthn"
 )
+
+type OnExpire func(displayName string)
 
 type UserSessions struct {
 	SessionData *webauthn.SessionData `json:"-"`
@@ -31,14 +34,15 @@ func (session *UserSessions) DeleteAfter(sessions map[string]*UserSessions) {
 		log.Printf("Session expired for user: %s", session.DisplayName)
 
 		// Check user conditions for deletion
-		user := UserModel{
-			Username: session.DisplayName,
-		}
-		userModel := user.Get()
-
-		if userModel.Password == "" && userModel.Incredentials == "" {
-			// userModel.Delete()
-			log.Printf("User deleted: %s", session.DisplayName)
+		if os.Getenv("test") != "true" {
+			user := UserModel{
+				Username: session.DisplayName,
+			}
+			userModel := user.Get()
+			if userModel.Password == "" && userModel.Incredentials == "" {
+				// userModel.Delete()
+				log.Printf("User deleted: %s", session.DisplayName)
+			}
 		}
 
 		// Delete the session from the sessions map

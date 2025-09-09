@@ -136,6 +136,8 @@ func registerEnd(c *fiber.Ctx) error {
 
 	session.Jwt = token
 	go session.DeleteAfter(utils.Sessions)
+
+	delete(utils.Sessions, user.Username)
 	utils.Sessions[user.Username] = session
 
 	return c.JSON(fiber.Map{

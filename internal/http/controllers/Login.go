@@ -162,6 +162,7 @@ func loginPassword(c *fiber.Ctx) error {
 
 	go session.DeleteAfter(utils.Sessions)
 
+	delete(utils.Sessions, user.Username)
 	utils.Sessions[user.Username] = session
 
 	return c.JSON(fiber.Map{
