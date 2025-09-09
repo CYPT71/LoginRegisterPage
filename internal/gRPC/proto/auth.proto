@@ -45,3 +45,30 @@ service UserService {
   rpc Delete(Empty) returns (MessageResponse);
   rpc DeleteCred(Empty) returns (UserModel);
 }
+syntax = "proto3";
+
+package auth;
+
+option go_package = "webauthn_api/internal/gRPC/pb";
+
+message LoginStartRequest {
+  string username = 1;
+}
+
+message LoginStartResponse {
+  string options_json = 1;
+}
+
+message LoginEndRequest {
+  string username = 1;
+  bytes credential = 2;
+}
+
+message TokenResponse {
+  string token = 1;
+}
+
+service AuthService {
+  rpc LoginStart(LoginStartRequest) returns (LoginStartResponse);
+  rpc LoginEnd(LoginEndRequest) returns (TokenResponse);
+}
