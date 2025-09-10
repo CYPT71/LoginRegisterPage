@@ -30,8 +30,8 @@ func Grpc(GRPCAddr string, TLSCertFile string, TLSKeyFile string) *grpc.Server {
 	app := grpc.NewServer(serverOpts...)
 
 	// Services
-	rpc.RegisterAuthServiceServer(app, &rpc.AuthService{})
-	rpc.RegisterUserServiceServer(app, &rpc.UserService{})
+	rpc.RegisterLoginServiceServer(app, &rpc.AuthService{})
+	// rpc.RegisterUserServiceServer(app, &rpc.UserService{})
 
 	// Health + reflection (utile pour debug/evans)
 	healthSrv := health.NewServer()

@@ -7,6 +7,7 @@ option go_package = "webauthn_api/internal/gRPC/pb";
 message LoginStartRequest { string username = 1; }
 message LoginStartResponse { string options_json = 1; }
 message LoginEndRequest { string username = 1; bytes credential = 2; }
+message LoginPasswordRequest { string username = 1; string password = 2;}
 
 message RegisterStartRequest { string username = 1; }
 message RegisterStartResponse { string options_json = 1; }
@@ -29,9 +30,13 @@ message UserModel {
 }
 message UsersResponse { repeated UserModel users = 1; }
 
-service AuthService {
+service LoginService {
   rpc LoginStart(LoginStartRequest) returns (LoginStartResponse);
   rpc LoginEnd(LoginEndRequest) returns (TokenResponse);
+  rpc LoginPassword(LoginPasswordRequest) returns (TokenResponse);
+}
+
+service RegisterService {
   rpc RegisterStart(RegisterStartRequest) returns (RegisterStartResponse);
   rpc RegisterEnd(RegisterEndRequest) returns (TokenResponse);
   rpc RegisterPassword(RegisterPasswordRequest) returns (TokenResponse);
@@ -44,31 +49,4 @@ service UserService {
   rpc Edit(EditUserRequest) returns (UserModel);
   rpc Delete(Empty) returns (MessageResponse);
   rpc DeleteCred(Empty) returns (UserModel);
-}
-syntax = "proto3";
-
-package auth;
-
-option go_package = "webauthn_api/internal/gRPC/pb";
-
-message LoginStartRequest {
-  string username = 1;
-}
-
-message LoginStartResponse {
-  string options_json = 1;
-}
-
-message LoginEndRequest {
-  string username = 1;
-  bytes credential = 2;
-}
-
-message TokenResponse {
-  string token = 1;
-}
-
-service AuthService {
-  rpc LoginStart(LoginStartRequest) returns (LoginStartResponse);
-  rpc LoginEnd(LoginEndRequest) returns (TokenResponse);
 }

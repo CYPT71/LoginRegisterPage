@@ -16,10 +16,11 @@ import (
 
 	_ "webauthn_api/docs"
 
+	"net"
+
 	"github.com/go-webauthn/webauthn/webauthn"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"net"
 )
 
 var err error
@@ -76,6 +77,7 @@ func main() {
 			log.Fatal(err)
 		}
 		server := grpcSrv.Grpc(addr, "./certs/server.crt", "./certs/server.key")
+		log.Println("Server started on", addr)
 		log.Fatal(server.Serve(lis))
 	} else {
 		log.Fatal(httpSrv.Http().ListenTLS(appListen, "./certs/server.crt", "./certs/server.key"))
